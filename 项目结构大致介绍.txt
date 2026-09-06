@@ -1,0 +1,25 @@
+这个项目分三个模块：
+
+  smart-common（公共模块）
+  存放所有模块都会用到的通用代码，包括：
+  - 常量（constant/）：状态码、消息文本等
+  - 异常类（exception/）：自定义业务异常
+  - 工具类（utils/）：JWT工具、阿里OSS工具等
+  - 结果封装（result/）：统一返回格式 Result<T>
+  - 配置属性类（properties/）：读取 yml 配置项
+
+  smart-pojo（实体模块）
+  存放数据对象，分三类：
+  - entity/：与数据库表对应的实体类（如 Employee、ServiceItem）
+  - dto/：接收前端请求参数的对象（Data Transfer Object）
+  - vo/：返回给前端的响应对象（View Object）
+
+  smart-server（业务模块）
+  核心模块，包含实际业务逻辑：
+  - controller/：接收 HTTP 请求
+  - service/：业务逻辑处理
+  - mapper/：数据库操作（MyBatis）
+  - config/：Spring 配置类
+  - interceptor/：拦截器（如 JWT 登录校验）
+
+  依赖关系是：smart-server 依赖 smart-common 和 smart-pojo。

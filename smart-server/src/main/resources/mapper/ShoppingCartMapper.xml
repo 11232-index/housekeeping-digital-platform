@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.ShoppingCartMapper">
+
+    <!-- 新增购物车数据 -->
+    <insert id="insert" parameterType="com.smart.entity.ShoppingCart" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO service_cart (name, image, user_id, service_item_id, service_package_id, requirement, amount, create_time)
+        VALUES (#{name}, #{image}, #{userId}, #{serviceItemId}, #{servicePackageId}, #{requirement}, #{amount}, #{createTime})
+    </insert>
+
+    <!-- 根据用户id和服务名称查询（按name去重） -->
+    <select id="getByUserIdAndName" resultType="com.smart.entity.ShoppingCart">
+        SELECT id, name, image, user_id, service_item_id, service_package_id, requirement, amount, create_time
+        FROM service_cart
+        WHERE user_id = #{userId} AND name = #{name}
+        LIMIT 1
+    </select>
+
+    <!-- 根据用户id和服务项目id+服务要求查询 -->
+    <select id="getByUserIdAndServiceItemIdAndRequirement" resultType="com.smart.entity.ShoppingCart">
+        SELECT id, name, image, user_id, service_item_id, service_package_id, requirement, amount, create_time
+        FROM service_cart
+        WHERE user_id = #{userId} AND service_item_id = #{serviceItemId}
+        <if test="requirement != null and requirement != ''">
+            AND requirement = #{requirement}
+        </if>
+        <if test="requirement == null or requirement == ''">
+            AND (requirement IS NULL OR requirement = '')
+        </if>
+    </select>
+
+    <!-- 根据用户id和服务套餐id+服务要求查询 -->
+    <select id="getByUserIdAndServicePackageIdAndRequirement" resultType="com.smart.entity.ShoppingCart">
+        SELECT id, name, image, user_id, service_item_id, service_package_id, requirement, amount, create_time
+        FROM service_cart
+        WHERE user_id = #{userId} AND service_package_id = #{servicePackageId}
+        <if test="requirement != null and requirement != ''">
+            AND requirement = #{requirement}
+        </if>
+        <if test="requirement == null or requirement == ''">
+            AND (requirement IS NULL OR requirement = '')
+        </if>
+    </select>
+
+    <!-- 根据用户id查询购物车列表 -->
+    <select id="listByUserId" resultType="com.smart.entity.ShoppingCart">
+        SELECT id, name, image, user_id, service_item_id, service_package_id, requirement, amount, create_time
+        FROM service_cart
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据id删除单条购物车数据 -->
+    <delete id="deleteById">
+        DELETE FROM service_cart WHERE id = #{id}
+    </delete>
+
+    <!-- 根据用户id清空购物车 -->
+    <delete id="deleteByUserId">
+        DELETE FROM service_cart WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

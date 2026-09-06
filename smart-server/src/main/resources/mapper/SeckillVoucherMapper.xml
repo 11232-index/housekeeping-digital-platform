@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.SeckillVoucherMapper">
+    <update id="update" parameterType="com.smart.entity.SeckillVoucher">
+        UPDATE tb_seckill_voucher
+        <set>
+            <if test="stock != null">
+                stock = #{stock},
+            </if>
+            <if test="beginTime != null">
+                begin_time = #{beginTime},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        WHERE voucher_id = #{voucherId}
+    </update>
+</mapper>

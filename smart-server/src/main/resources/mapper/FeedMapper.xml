@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.FeedMapper">
+
+    <!-- 联表查询：UNION ALL 两张表，按时间降序 -->
+    <select id="list" resultType="com.smart.entity.Feed">
+        SELECT * FROM (
+            SELECT f.id, f.updates_id, f.service_intro_id, f.create_time,
+                   u.title, u.picture, u.content, 'updates' AS source_type
+            FROM feed f
+            LEFT JOIN updates u ON f.updates_id = u.id
+            WHERE f.updates_id IS NOT NULL
+            UNION ALL
+            SELECT f.id, f.updates_id, f.service_intro_id, f.create_time,
+                   si.title, si.picture, si.content, 'service-intro' AS source_type
+            FROM feed f
+            LEFT JOIN service_intro si ON f.service_intro_id = si.id
+            WHERE f.service_intro_id IS NOT NULL
+        ) AS t
+        ORDER BY t.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

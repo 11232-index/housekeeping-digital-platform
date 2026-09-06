@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.EmployeeDetailMapper">
+    <update id="update" parameterType="com.smart.entity.EmployeeDetail">
+        UPDATE employee_detail
+        <set>
+            <if test="education != null">
+                education = #{education},
+            </if>
+            <if test="pastExperience != null">
+                past_experience = #{pastExperience},
+            </if>
+            <if test="position != null">
+                position = #{position},
+            </if>
+            <if test="salary != null">
+                salary = #{salary},
+            </if>
+            <if test="workStatus != null">
+                work_status = #{workStatus},
+            </if>
+            <if test="contract != null">
+                contract = #{contract},
+            </if>
+            <if test="healthCertificate != null">
+                health_certificate = #{healthCertificate},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        WHERE employee_id = #{employeeId}
+    </update>
+</mapper>

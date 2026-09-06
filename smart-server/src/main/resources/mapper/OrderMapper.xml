@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.OrderMapper">
+
+    <!-- 动态更新：只更新非空字段 -->
+    <update id="update" parameterType="com.smart.entity.Order">
+        UPDATE orders
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="addressBookId != null">address_book_id = #{addressBookId},</if>
+            <if test="housekeeperScheduleId != null">housekeeper_schedule_id = #{housekeeperScheduleId},</if>
+            <if test="scheduleDate != null">schedule_date = #{scheduleDate},</if>
+            <if test="scheduleTime != null">schedule_time = #{scheduleTime},</if>
+            <if test="serviceDuration != null">service_duration = #{serviceDuration},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="payMethod != null">pay_method = #{payMethod},</if>
+            <if test="payStatus != null">pay_status = #{payStatus},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="contactName != null">contact_name = #{contactName},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
+            <if test="estimatedServiceTime != null">estimated_service_time = #{estimatedServiceTime},</if>
+            <if test="actualServiceTime != null">actual_service_time = #{actualServiceTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 分页查询：动态条件 + 按下单时间倒序 -->
+    <select id="pageQuery" parameterType="map" resultType="com.smart.entity.Order">
+        SELECT * FROM orders
+        <where>
+            <if test="number != null and number != ''">
+                AND number LIKE CONCAT('%', #{number}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="contactName != null and contactName != ''">
+                AND contact_name LIKE CONCAT('%', #{contactName}, '%')
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND order_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY order_time DESC
+    </select>
+
+</mapper>

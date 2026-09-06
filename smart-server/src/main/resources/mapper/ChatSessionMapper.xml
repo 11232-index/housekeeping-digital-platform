@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.ChatSessionMapper">
+
+    <select id="pageQuery" resultType="com.smart.entity.ChatSession">
+        SELECT * FROM chat_session
+        WHERE admin_id = #{adminId}
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        ORDER BY update_time DESC
+    </select>
+
+</mapper>

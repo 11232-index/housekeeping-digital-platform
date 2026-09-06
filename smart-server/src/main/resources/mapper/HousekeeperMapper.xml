@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.HousekeeperMapper">
+    <update id="update" parameterType="com.smart.entity.Housekeeper">
+        UPDATE housekeeper
+        <set>
+            <if test="name != null"> name = #{name}, </if>
+            <if test="picture != null"> picture = #{picture}, </if>
+            <if test="price != null"> price = #{price}, </if>
+            <if test="rating != null"> rating = #{rating}, </if>
+            <if test="rank != null"> `rank` = #{rank}, </if>
+            <if test="carousel != null"> carousel = #{carousel}, </if>
+            <if test="review != null"> review = #{review}, </if>
+            <if test="updateTime != null"> update_time = #{updateTime} </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="pageQuery" resultType="com.smart.entity.Housekeeper">
+        SELECT id, employee_id, name, picture, price, rating, `rank`, carousel, review, create_user, update_user, create_time, update_time
+        FROM housekeeper
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.ServicePackageMapper">
+
+    <!-- 分页查询服务套餐（联表查询分类名称） -->
+    <select id="pageQuery" resultType="com.smart.vo.ServicePackageVO">
+        SELECT
+            sp.id, sp.name, sp.category_id, sp.price, sp.image,
+            sp.description, sp.status, sp.update_time,
+            c.name AS category_name
+        FROM service_package sp
+        LEFT JOIN category c ON sp.category_id = c.id
+        <where>
+            AND c.status = 1
+            <if test="name != null and name != ''">
+                AND sp.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND sp.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                AND sp.status = #{status}
+            </if>
+        </where>
+        ORDER BY sp.update_time DESC
+    </select>
+
+    <!-- 修改服务套餐信息（动态更新） -->
+    <update id="update" parameterType="com.smart.entity.ServicePackage">
+        UPDATE service_package
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="image != null">
+                image = #{image},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 批量删除 -->
+    <delete id="deleteBatch">
+        DELETE FROM service_package WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
