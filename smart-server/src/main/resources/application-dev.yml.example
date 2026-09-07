@@ -4,6 +4,14 @@
 #      数据库密码 / 阿里云OSS密钥 / 微信小程序密钥 后即可运行。
 # application-dev.yml 已被 .gitignore 忽略，不会上传到 Git。
 # =============================================================
+spring:
+  rabbitmq:
+    host: localhost          # RabbitMQ 地址（本机/虚拟机IP）
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
 smart:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

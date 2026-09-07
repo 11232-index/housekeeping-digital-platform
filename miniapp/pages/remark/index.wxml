@@ -1,0 +1,11 @@
+<view class="remark-page">
+  <view class="remark-content">
+    <view class="remark-box card">
+      <textarea class="remark-textarea" placeholder="请输入备注信息..." value="{{remark}}" bindinput="onInput" maxlength="50"></textarea>
+      <text class="remark-count">{{numVal}}/50</text>
+    </view>
+  </view>
+  <view class="remark-footer">
+    <button class="save-btn" bindtap="save">完成</button>
+  </view>
+</view>

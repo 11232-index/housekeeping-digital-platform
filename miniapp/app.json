@@ -1,0 +1,64 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/updates/updates",
+    "pages/updates-detail/updates-detail",
+    "pages/service-intro/service-intro",
+    "pages/service-intro-detail/service-intro-detail",
+    "pages/about/about",
+    "pages/housekeeper-detail/housekeeper-detail",
+    "pages/appointment/appointment",
+    "pages/details/index",
+    "pages/booking/booking",
+    "pages/cart/cart",
+    "pages/order/index",
+    "pages/pay/index",
+    "pages/success/index",
+    "pages/nonet/index",
+    "pages/address/address",
+    "pages/remark/index",
+    "pages/my/my",
+    "pages/addOrEditAddress/addOrEditAddress",
+    "pages/historyOrder/historyOrder",
+    "pages/cancel-reason/index",
+    "pages/workerLogin/workerLogin",
+    "pages/workerHome/workerHome",
+    "pages/workerOrder/workerOrder",
+    "pages/workerProfile/workerProfile"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "智能家政服务",
+    "navigationBarBackgroundColor": "#1976d2",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1976d2",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/booking/booking",
+        "text": "家政预约"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "预约清单"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {
+    "tab-bar": "/components/tab-bar/tab-bar"
+  },
+  "sitemapLocation": "sitemap.json"
+}

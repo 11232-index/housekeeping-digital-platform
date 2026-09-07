@@ -1,0 +1,39 @@
+<view class="cart-page">
+  <view wx:if="{{cartList.length === 0}}" class="cart-empty">
+    <image class="cart-empty-icon" src="../../images/icon-cart.png" mode="aspectFit"></image>
+    <text class="cart-empty-text">预约清单为空</text>
+    <text class="cart-empty-tip">快去首页添加服务吧</text>
+  </view>
+
+  <block wx:else>
+    <view class="cart-header">
+      <text class="cart-header-title">共{{totalCount}}项服务</text>
+      <view class="cart-clear" bindtap="clearCart">
+        <text>清空</text>
+      </view>
+    </view>
+    <scroll-view class="cart-list" scroll-y="true">
+      <view wx:for="{{cartList}}" wx:key="cartKey" class="cart-item" data-index="{{index}}" bindtap="goOrderWithItem">
+        <image class="cart-item-image" src="{{item.image}}" mode="aspectFill"></image>
+        <view class="cart-item-info">
+          <text class="cart-item-name">{{item.name}}</text>
+          <text class="cart-item-price">¥{{item.price}}</text>
+        </view>
+        <view class="cart-item-action">
+          <text class="action-btn danger" data-item="{{item}}" catchtap="removeFromCart">删除</text>
+        </view>
+        <view class="cart-item-arrow">></view>
+      </view>
+      <view class="cart-placeholder"></view>
+    </scroll-view>
+  </block>
+  <view wx:if="{{cartList.length > 0}}" class="cart-bottom">
+    <view class="cart-bottom-price">
+      <text class="price-label">合计：</text>
+      <text class="price-symbol">¥</text>
+      <text class="price-value">{{totalPrice}}</text>
+    </view>
+    <view class="cart-bottom-btn active" bindtap="goOrder">填写预约信息</view>
+  </view>
+  <tab-bar selected="{{2}}"></tab-bar>
+</view>

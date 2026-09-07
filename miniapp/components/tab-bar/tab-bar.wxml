@@ -1,0 +1,5 @@
+<view class="mytab">
+  <view wx:for="{{list}}" wx:key="index" class="mytab-item" data-path="{{item.pagePath}}" bindtap="onTap">
+    <text class="mytab-text {{selected === index ? 'active' : ''}}">{{item.text}}</text>
+  </view>
+</view>

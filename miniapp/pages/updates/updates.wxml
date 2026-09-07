@@ -1,0 +1,45 @@
+<view class="updates-page">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <icon type="search" size="16" class="search-icon"></icon>
+      <input class="search-input" placeholder="搜索标题" value="{{keyword}}" bindinput="onInput" bindconfirm="onSearch" confirm-type="search" bindfocus="onSearchFocus" />
+      <text wx:if="{{keyword}}" class="search-clear" bindtap="onClear">✕</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view wx:if="{{showHistory && searchHistory.length > 0}}" class="search-history">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <view class="history-clear" bindtap="clearSearchHistory">
+        <text class="history-clear-icon">✕</text>
+      </view>
+    </view>
+    <view class="history-list">
+      <view wx:for="{{searchHistory}}" wx:key="id" class="history-item" data-keyword="{{item.keyword}}" bindtap="tapHistoryItem">
+        <text class="history-keyword">{{item.keyword}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 动态列表 -->
+  <view wx:if="{{list.length > 0}}" class="updates-list">
+    <view wx:for="{{list}}" wx:key="id" class="update-card" data-id="{{item.id}}" bindtap="onTapCard">
+      <view class="card-title">{{item.title}}</view>
+      <view class="card-body">
+        <image wx:if="{{item.picture}}" class="card-img" src="{{item.picture}}" mode="aspectFill"></image>
+        <view wx:else class="card-img card-img-empty">暂无图片</view>
+        <view class="card-content">{{item.content}}</view>
+      </view>
+      <view class="card-time">{{item.createTime}}</view>
+    </view>
+
+    <view wx:if="{{hasMore}}" class="load-more" bindtap="loadMore">加载更多</view>
+    <view wx:if="{{list.length > 0 && !hasMore}}" class="no-more">— 没有更多了 —</view>
+  </view>
+
+  <view wx:elif="{{!loading}}" class="empty-tip">暂无动态</view>
+
+  <view wx:if="{{loading}}" class="loading-tip">加载中...</view>
+</view>

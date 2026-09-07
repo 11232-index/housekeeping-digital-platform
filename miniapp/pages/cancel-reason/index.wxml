@@ -1,0 +1,16 @@
+<view class="cr-page">
+  <view class="cr-section">
+    <view class="cr-title">请选择取消原因（可选）</view>
+    <view class="cr-tags">
+      <view wx:for="{{reasons}}" wx:key="*this" class="cr-tag {{selectedReason === item ? 'active' : ''}}" data-reason="{{item}}" bindtap="onSelectReason">{{item}}</view>
+    </view>
+  </view>
+  <view class="cr-section">
+    <view class="cr-title">其他原因</view>
+    <textarea class="cr-textarea" placeholder="请输入其他原因（选填）" value="{{customReason}}" bindinput="onInput" maxlength="100"></textarea>
+  </view>
+  <view class="cr-footer">
+    <view class="cr-btn cr-btn-cancel" bindtap="onCancel">返回</view>
+    <view class="cr-btn cr-btn-confirm" bindtap="onConfirm">确认取消</view>
+  </view>
+</view>

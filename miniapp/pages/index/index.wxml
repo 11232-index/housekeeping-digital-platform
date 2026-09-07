@@ -1,0 +1,158 @@
+<view class="home-page">
+  <view class="shop-header">
+    <image class="shop-header-bg" src="../../icons/2A98E2ACF9615ABF5CC32A95AEE40183.jpg" mode="aspectFill"></image>
+    <view class="shop-info-card">
+      <view class="shop-top">
+        <image class="shop-logo" src="../../icons/JMandBK.jpg" mode="aspectFill"></image>
+        <view class="shop-info-right">
+          <view class="shop-name-row">
+            <text class="shop-name">{{shopName}}</text>
+            <text class="shop-status {{shopStatus === 1 ? 'open' : 'closed'}}">{{shopStatus === 1 ? '营业中' : '休息中'}}</text>
+          </view>
+          <view class="shop-meta">
+            <view class="shop-meta-item"><image class="meta-icon" src="../../images/icon-time.png"></image><text>约2小时</text></view>
+            <view class="shop-meta-item"><image class="meta-icon" src="../../images/icon-star.png"></image><text>4.9分</text></view>
+            <view class="shop-meta-item"><image class="meta-icon" src="../../images/icon-sale.png"></image><text>月销1000+</text></view>
+          </view>
+        </view>
+      </view>
+      <view class="shop-bottom">
+        <view class="shop-desc">{{shopDesc}}</view>
+        <view class="shop-address"><icon type="info" size="12"></icon><text>{{shopAddress}}</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务推荐轮播图 -->
+  <view wx:if="{{bannerList.length > 0}}" class="banner-section">
+    <swiper class="banner-swiper" indicator-dots="{{true}}" autoplay="{{true}}" interval="{{5000}}" duration="{{500}}" circular="{{true}}">
+      <swiper-item wx:for="{{bannerList}}" wx:key="id">
+        <image class="banner-img" src="{{item.picture}}" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-nav">
+    <view class="quick-nav-item" data-page="updates" bindtap="onNavTap">
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/7184d268-216d-4d95-8257-013115e69e87.jpg" mode="widthFix"></image></view>
+      <text class="quick-nav-text">最新动态</text>
+    </view>
+    <view class="quick-nav-item" data-page="service-intro" bindtap="onNavTap">
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/e27b9ffd-403d-418c-b5e8-d95f62ac725d.jpg" mode="widthFix"></image></view>
+      <text class="quick-nav-text">服务介绍</text>
+    </view>
+    <view class="quick-nav-item" data-page="housekeeper" bindtap="onNavTap">
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/406b4992-e14f-4278-9aa9-706c81aa0274.jpg" mode="widthFix"></image></view>
+      <text class="quick-nav-text">家政员预约</text>
+    </view>
+    <view class="quick-nav-item" data-page="about" bindtap="onNavTap">
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/2b0d79ad-4114-4bda-a606-835a2e13f81f.jpg" mode="widthFix"></image></view>
+      <text class="quick-nav-text">关于我们</text>
+    </view>
+  </view>
+
+  <!-- 优惠券 -->
+  <view wx:if="{{couponList.length > 0}}" class="coupon-section">
+    <view class="coupon-header">
+      <text class="coupon-title">优惠券</text>
+    </view>
+    <view class="coupon-list">
+      <view wx:for="{{couponList}}" wx:key="id" class="coupon-card">
+        <view class="coupon-left">
+          <view class="coupon-value">
+            <text class="coupon-num">{{item.actualValue / 10}}</text>
+            <text class="coupon-yuan">折</text>
+          </view>
+          <text class="coupon-label">折扣券</text>
+        </view>
+        <view class="coupon-right">
+          <text class="coupon-title-text">{{item.title}}</text>
+          <text wx:if="{{item.subTitle}}" class="coupon-subtitle">{{item.subTitle}}</text>
+          <text wx:if="{{item.rules}}" class="coupon-rule">{{item.rules}}</text>
+          <view class="coupon-bottom">
+            <text class="coupon-type">{{item.type === 1 ? '秒杀券' : '普通券'}}</text>
+            <text wx:if="{{item.type === 1 && item.beginTime && item.endTime}}" class="coupon-time">有效期 {{item.beginTime}} ~ {{item.endTime}}</text>
+          </view>
+        </view>
+        <view class="coupon-claim" data-id="{{item.id}}" data-type="{{item.type}}" bindtap="onCouponClaim">
+          <text class="coupon-claim-text">{{item.type === 1 ? '秒杀' : '领取'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 家政推荐 -->
+  <view wx:if="{{housekeeperList.length > 0}}" class="hk-recommend">
+    <view class="hk-header">
+      <text class="hk-title">家政推荐</text>
+      <view class="hk-more" bindtap="onMoreHousekeeper">
+        <text>更多</text>
+      </view>
+    </view>
+    <scroll-view class="hk-scroll" scroll-x="true">
+      <view class="hk-list">
+        <view wx:for="{{housekeeperList}}" wx:key="id" class="hk-item" data-id="{{item.id}}" bindtap="onHkTap">
+          <image wx:if="{{item.picture}}" class="hk-img" src="{{item.picture}}" mode="aspectFill"></image>
+          <view wx:else class="hk-img hk-img-empty"></view>
+          <text class="hk-name">{{item.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 资讯中心 -->
+  <view wx:if="{{feedList.length > 0}}" class="feed-section">
+    <view class="feed-header">
+      <text class="feed-title">资讯中心</text>
+    </view>
+    <view class="feed-list">
+      <view wx:for="{{feedList}}" wx:key="id" class="feed-card" data-item="{{item}}" bindtap="onFeedTap">
+        <image wx:if="{{item.picture}}" class="feed-img" src="{{item.picture}}" mode="aspectFill"></image>
+        <view wx:else class="feed-img feed-img-empty"></view>
+        <view class="feed-info">
+          <text class="feed-item-title">{{item.title}}</text>
+          <text class="feed-item-content">{{item.content}}</text>
+          <view class="feed-bottom">
+            <text class="feed-time">{{item.createTime}}</text>
+            <text class="feed-source">{{item.sourceType === 'updates' ? '最新动态' : '服务介绍'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="pop-mask" wx:if="{{loading}}">
+    <view class="loading-wrap"><image class="loading-gif" src="../../images/loading.gif"></image></view>
+  </view>
+
+  <!-- ========== 未登录授权面板 ========== -->
+  <view class="login-lock" wx:if="{{!isLoggedIn}}">
+    <view class="tips-dialog" wx:if="{{authStep === 1}}">
+      <view class="tips-dialog-title">温馨提示</view>
+      <view class="tips-dialog-desc">请授权微信登录</view>
+      <view class="tips-dialog-btn" bindtap="onTipsConfirm">确定</view>
+    </view>
+    <view class="auth-panel" wx:if="{{authStep === 2}}">
+      <view class="auth-panel-mask"></view>
+      <view class="auth-panel-body">
+        <view class="auth-panel-title">智能家政 申请</view>
+        <view class="auth-panel-subtitle">获取你的昵称、头像</view>
+        <view class="auth-info-row">
+          <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+            <image class="auth-avatar {{avatarUrl ? 'selected' : ''}}" src="{{avatarUrl || '../../images/logo.png'}}" mode="aspectFill"></image>
+          </button>
+          <view class="auth-info-right">
+            <input class="auth-nickname-input {{nickName ? 'filled' : ''}}" type="nickname" placeholder="点击获取微信昵称" value="{{nickName}}" bindblur="onNicknameBlur" bindinput="onNicknameInput"/>
+            <view wx:if="{{avatarUrl && nickName}}" class="auth-check">✓</view>
+          </view>
+        </view>
+        <view class="auth-buttons">
+          <view class="auth-btn deny" bindtap="onAuthDeny">拒绝</view>
+          <view class="auth-btn allow {{avatarUrl && nickName ? '' : 'disabled'}}" bindtap="onAuthAllow">允许</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <tab-bar selected="{{0}}"></tab-bar>
+</view>

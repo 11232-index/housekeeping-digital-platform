@@ -1,0 +1,143 @@
+.home-page{min-height:100vh;background:#f5f5f5;padding-bottom:120rpx}
+.shop-header{position:relative;padding:20rpx;padding-top:60rpx;overflow:hidden}
+.shop-header-bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
+.shop-info-card{position:relative;z-index:1;background:#fff;border-radius:16rpx;padding:24rpx;box-shadow:0 4rpx 16rpx rgba(0,0,0,.1)}
+.shop-top{display:flex;padding-bottom:20rpx;border-bottom:1rpx dashed #e0e0e0}
+.shop-logo{width:120rpx;height:120rpx;border-radius:12rpx;flex-shrink:0}
+.shop-info-right{flex:1;margin-left:20rpx;display:flex;flex-direction:column;justify-content:space-between}
+.shop-name-row{display:flex;align-items:center}
+.shop-name{font-size:36rpx;font-weight:bold;color:#333}
+.shop-status{margin-left:16rpx;padding:4rpx 16rpx;border-radius:8rpx;font-size:22rpx}
+.shop-status.open{background:#e8f5e9;color:#2e7d32}
+.shop-status.closed{background:#fbe9e7;color:#bf360c}
+.shop-meta{display:flex;gap:24rpx}
+.shop-meta-item{display:flex;align-items:center;font-size:24rpx;color:#888}
+.meta-icon{width:28rpx;height:28rpx;margin-right:6rpx}
+.shop-bottom{padding-top:20rpx}
+.shop-desc{font-size:26rpx;color:#666;margin-bottom:10rpx}
+.shop-address{font-size:24rpx;color:#999;display:flex;align-items:center;gap:6rpx}
+
+.banner-section{margin-top:16rpx;padding:0 20rpx}
+.banner-swiper{width:100%;height:300rpx;border-radius:16rpx;overflow:hidden}
+.banner-img{width:100%;height:100%}
+
+.quick-nav{display:flex;justify-content:space-around;padding:24rpx 16rpx;background:#fff;margin-top:16rpx}
+.quick-nav-item{display:flex;flex-direction:column;align-items:center;width:140rpx}
+.quick-nav-img-wrap{width:80rpx;height:80rpx;border-radius:16rpx;overflow:hidden;background:#f0f0f0}
+.quick-nav-img{width:100%;display:block}
+.quick-nav-text{font-size:24rpx;color:#666;margin-top:10rpx}
+
+.hk-recommend{background:#fff;margin-top:16rpx;padding:24rpx 20rpx}
+.hk-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20rpx}
+.hk-title{font-size:34rpx;font-weight:bold;color:#333}
+.hk-more{display:flex;align-items:center;font-size:24rpx;color:#1976d2}
+.hk-scroll{width:100%;white-space:nowrap}
+.hk-list{display:inline-flex;gap:20rpx}
+.hk-item{display:flex;flex-direction:column;align-items:center;width:160rpx;flex-shrink:0}
+.hk-img{width:140rpx;height:140rpx;border-radius:24rpx;box-shadow:0 6rpx 20rpx rgba(0,0,0,0.15)}
+.hk-img-empty{background:#f0f0f0}
+.hk-name{font-size:24rpx;color:#333;margin-top:12rpx;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140rpx}
+
+.coupon-section{background:#fff;margin-top:16rpx;padding:24rpx 20rpx}
+.coupon-header{margin-bottom:20rpx}
+.coupon-title{font-size:34rpx;font-weight:bold;color:#333}
+.coupon-list{display:flex;flex-direction:column;gap:20rpx}
+.coupon-card{display:flex;align-items:center;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:16rpx;padding:24rpx}
+.coupon-left{width:180rpx;text-align:center;border-right:1rpx dashed rgba(25,118,210,.4);flex-shrink:0}
+.coupon-value{display:flex;align-items:baseline;justify-content:center;color:#1976d2}
+.coupon-yuan{font-size:24rpx;font-weight:bold}
+.coupon-num{font-size:52rpx;font-weight:bold}
+.coupon-label{font-size:22rpx;color:#1976d2;margin-top:6rpx}
+.coupon-right{flex:1;margin-left:20rpx;min-width:0}
+.coupon-title-text{font-size:28rpx;font-weight:bold;color:#333;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coupon-subtitle{font-size:22rpx;color:#666;display:block;margin-top:4rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coupon-rule{font-size:22rpx;color:#888;display:block;margin-top:4rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coupon-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:8rpx;margin-top:8rpx}
+.coupon-type{font-size:20rpx;color:#1976d2;padding:2rpx 12rpx;background:#fff;border-radius:10rpx;white-space:nowrap}
+.coupon-time{font-size:20rpx;color:#888;line-height:1.4;word-break:break-all;display:block}
+.coupon-claim{flex-shrink:0;margin-left:16rpx}
+.coupon-claim-text{display:block;padding:14rpx 28rpx;background:#1976d2;color:#fff;border-radius:28rpx;font-size:26rpx}
+.feed-section{background:#fff;margin-top:16rpx;padding:24rpx 20rpx}
+.feed-header{margin-bottom:20rpx}
+.feed-title{font-size:34rpx;font-weight:bold;color:#333}
+.feed-list{display:flex;flex-direction:column;gap:20rpx}
+.feed-card{display:flex;gap:16rpx;padding-bottom:20rpx;border-bottom:1rpx solid #f5f5f5}
+.feed-card:last-child{border-bottom:none;padding-bottom:0}
+.feed-img{width:140rpx;height:140rpx;border-radius:12rpx;flex-shrink:0}
+.feed-img-empty{background:#f0f0f0}
+.feed-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.feed-item-title{font-size:28rpx;font-weight:bold;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed-item-content{font-size:24rpx;color:#999;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;margin:6rpx 0;word-break:break-all}
+.feed-bottom{display:flex;justify-content:space-between;align-items:center}
+.feed-time{font-size:22rpx;color:#bbb}
+.feed-source{font-size:22rpx;color:#1976d2;padding:2rpx 12rpx;background:#e3f2fd;border-radius:12rpx}
+
+.pop-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200}
+.loading-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.loading-gif{width:100rpx;height:100rpx}
+
+/* ========== 未登录锁定层 ========== */
+.login-lock{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.45);
+  z-index:9999;
+}
+.tips-dialog{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:560rpx;background:#fff;
+  border-radius:20rpx;padding:50rpx 40rpx 36rpx;
+  text-align:center;box-shadow:0 12rpx 48rpx rgba(0,0,0,.25);
+}
+.tips-dialog-title{font-size:36rpx;font-weight:bold;color:#333;margin-bottom:22rpx}
+.tips-dialog-desc{font-size:28rpx;color:#999;margin-bottom:42rpx}
+.tips-dialog-btn{
+  width:100%;height:80rpx;line-height:80rpx;
+  font-size:32rpx;font-weight:500;color:#1976d2;
+  border-top:1rpx solid #f0f0f0;padding-top:12rpx;
+}
+.auth-panel{position:absolute;bottom:0;left:0;right:0;top:0}
+.auth-panel-mask{position:absolute;top:0;left:0;right:0;bottom:0}
+.auth-panel-body{
+  position:absolute;bottom:100rpx;left:0;right:0;
+  background:#fff;border-radius:24rpx 24rpx 0 0;
+  padding:40rpx 40rpx 30rpx;
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.auth-panel-title{font-size:34rpx;font-weight:bold;color:#333;text-align:center;margin-bottom:10rpx}
+.auth-panel-subtitle{font-size:26rpx;color:#999;text-align:center;margin-bottom:36rpx}
+.auth-info-row{
+  display:flex;align-items:center;gap:24rpx;
+  padding:24rpx 20rpx;background:#f8f8f8;
+  border-radius:16rpx;margin-bottom:36rpx;
+}
+.auth-avatar-btn{
+  width:100rpx;height:100rpx;border-radius:50%;
+  overflow:hidden;padding:0;margin:0;
+  background:transparent;border:none;flex-shrink:0;
+}
+.auth-avatar-btn::after{border:none}
+.auth-avatar{
+  width:100rpx;height:100rpx;border-radius:50%;
+  display:block;border:3rpx dashed #ddd;
+}
+.auth-avatar.selected{border-color:#07c160;border-style:solid}
+.auth-info-right{flex:1;display:flex;align-items:center;gap:12rpx}
+.auth-nickname-input{
+  flex:1;height:72rpx;line-height:72rpx;
+  background:#fff;border-radius:8rpx;
+  padding:0 16rpx;font-size:28rpx;color:#999;
+}
+.auth-nickname-input.filled{color:#333;font-weight:bold}
+.auth-check{
+  width:44rpx;height:44rpx;line-height:44rpx;
+  text-align:center;background:#07c160;color:#fff;
+  border-radius:50%;font-size:28rpx;font-weight:bold;
+  flex-shrink:0;
+}
+.auth-buttons{display:flex;gap:24rpx}
+.auth-btn{flex:1;height:88rpx;line-height:88rpx;text-align:center;border-radius:44rpx;font-size:30rpx;font-weight:500}
+.auth-btn.deny{background:#f5f5f5;color:#666}
+.auth-btn.allow{background:#07c160;color:#fff}
+.auth-btn.allow.disabled{opacity:.4;pointer-events:none}

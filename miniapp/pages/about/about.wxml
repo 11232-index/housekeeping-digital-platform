@@ -1,0 +1,16 @@
+<view class="page">
+  <!-- 横向滑动导航栏 -->
+  <scroll-view class="tab-bar" scroll-x="true" scroll-with-animation="true">
+    <view class="tab-list">
+      <view wx:for="{{list}}" wx:key="id" class="tab-item {{currentIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="onTabTap">
+        <text class="tab-text">{{item.title}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 内容区 -->
+  <view wx:if="{{list.length > 0}}" class="content-box">
+    <view class="content-text">{{list[currentIndex].content}}</view>
+  </view>
+  <view wx:else class="loading-tip">加载中...</view>
+</view>

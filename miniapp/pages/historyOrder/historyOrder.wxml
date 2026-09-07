@@ -1,0 +1,53 @@
+<wxs module="util">
+var getStatusText = function(status) {
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  return map[status] || '未知';
+};
+var getStatusClass = function(status) {
+  if (status === 1) return 'tag-warning';
+  if (status === 2) return 'tag-primary';
+  if (status === 3 || status === 4) return 'tag-info';
+  if (status === 5) return 'tag-success';
+  if (status === 6) return 'tag-warning';
+  return 'tag-gray';
+};
+var orderTitle = function(list) {
+  if (!list || list.length === 0) return '--';
+  if (list.length === 1) return list[0].name;
+  return list[0].name + ' 等' + list.length + '项';
+};
+var firstReq = function(list) {
+  if (list && list.length > 0) return list[0].requirement || '';
+  return '';
+};
+module.exports = { getStatusText: getStatusText, getStatusClass: getStatusClass, orderTitle: orderTitle, firstReq: firstReq };
+</wxs>
+<view class="history-page">
+  <view class="tab-bar">
+    <text wx:for="{{tabs}}" wx:key="*this" class="tab-item {{tabIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="changeTab">{{item}}</text>
+  </view>
+  <scroll-view class="order-list" scroll-y="true" bindscrolltolower="loadMore">
+    <block wx:if="{{orderList.length > 0}}">
+      <view wx:for="{{orderList}}" wx:key="id" class="order-card">
+        <view class="oc-top">
+          <text class="oc-status-tag {{util.getStatusClass(item.status)}}">{{util.getStatusText(item.status)}}</text>
+          <text class="oc-number">订单号：{{item.number}}</text>
+        </view>
+        <view class="oc-body">
+          <text class="oc-name">{{util.orderTitle(item.orderDetailList)}}</text>
+          <text class="oc-contact">姓名：{{item.contactName || '--'}}</text>
+          <text class="oc-time">时间：{{item.scheduleDate}} {{item.scheduleTime}}</text>
+          <text class="oc-amount">合计：¥{{item.amount}}</text>
+        </view>
+        <view class="oc-actions">
+          <view class="oc-btn oc-btn-outline" data-id="{{item.id}}" catchtap="goDetail">查看详情</view>
+          <view wx:if="{{item.status === 1}}" class="oc-btn oc-btn-primary" data-id="{{item.id}}" catchtap="goPay">付款</view>
+          <view wx:if="{{item.status === 2}}" class="oc-btn oc-btn-outline" data-id="{{item.id}}" catchtap="cancelOrder">申请退款</view>
+        </view>
+      </view>
+    </block>
+    <block wx:else><view class="empty-state"><text>暂无订单</text></view></block>
+    <view wx:if="{{hasMore}}" class="load-more-tip">上拉加载更多</view>
+    <view wx:elif="{{orderList.length > 0}}" class="load-more-tip">— 已加载全部 —</view>
+  </scroll-view>
+</view>

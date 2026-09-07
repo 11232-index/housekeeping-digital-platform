@@ -1,0 +1,26 @@
+<view class="wlog-page">
+
+  <!-- 顶部品牌区 -->
+  <view class="wlog-header">
+    <image class="wlog-logo" src="../../images/logo.png" mode="aspectFill"></image>
+    <text class="wlog-title">家政员工作台</text>
+    <text class="wlog-sub">账号密码登录（需为家政员账号）</text>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="wlog-card">
+    <view class="form-item">
+      <text class="form-label">账号</text>
+      <input class="form-input" placeholder="请输入员工账号" value="{{username}}"
+             data-field="username" bindinput="onInput"/>
+    </view>
+    <view class="form-item" style="border-bottom:none">
+      <text class="form-label">密码</text>
+      <input class="form-input" password placeholder="请输入密码" value="{{password}}"
+             data-field="password" bindinput="onInput"/>
+    </view>
+  </view>
+
+  <button class="wlog-btn" loading="{{submitting}}" bindtap="doLogin">登 录</button>
+  <view class="wlog-tip">仅家政员（员工表 role 为家政员）账号可登录，登录后进入工作台</view>
+</view>

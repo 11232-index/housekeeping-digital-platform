@@ -1,0 +1,67 @@
+<wxs module="util">
+var formatSex = function(val) {
+  if (val === 1 || val === "1") return "男";
+  if (val === 2 || val === "2") return "女";
+  return "暂无";
+}
+module.exports = { formatSex: formatSex };
+</wxs>
+<view class="detail-page">
+  <view wx:if="{{data}}">
+    <!-- 轮播图 -->
+    <view wx:if="{{carouselList.length > 0}}" class="carousel-section">
+      <swiper class="carousel-swiper" indicator-dots="{{carouselList.length > 1}}" autoplay="{{true}}" interval="{{5000}}" duration="{{500}}" circular="{{true}}">
+        <swiper-item wx:for="{{carouselList}}" wx:key="index">
+          <image class="carousel-img" src="{{item}}" mode="aspectFill"></image>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 家政员信息卡片 -->
+    <view wx:if="{{data}}" class="info-card">
+      <!-- 上盒子：头像 + 名字/评分 + rank + 单价 -->
+      <view class="info-card-top">
+        <image wx:if="{{data.picture}}" class="info-avatar" src="{{data.picture}}" mode="aspectFill"></image>
+        <view wx:else class="info-avatar info-avatar-empty"></view>
+        <view class="info-main">
+          <text class="info-name">{{data.name}}</text>
+          <view class="info-stars-row">
+            <view wx:if="{{data.rating > 0}}" class="info-stars">
+              <view class="info-stars-empty">★★★★★</view>
+              <view class="info-stars-fill" style="width:{{data.rating / 5 * 100}}%">★★★★★</view>
+            </view>
+            <text wx:if="{{data.rating > 0}}" class="info-rating-num">{{data.ratingText}}</text>
+            <text wx:else class="info-no-rating">暂无评分</text>
+          </view>
+          <view class="info-rank">
+            <text wx:if="{{data.rank === 1}}" class="info-rank-tag rank-gold">金牌</text>
+            <text wx:elif="{{data.rank === 2}}" class="info-rank-tag rank-silver">银牌</text>
+            <text wx:elif="{{data.rank === 3}}" class="info-rank-tag rank-bronze">铜牌</text>
+          </view>
+        </view>
+        <view class="info-price-wrap">
+          <text class="info-price-symbol">¥</text><text class="info-price-value">{{data.price}}</text>
+          <text class="info-price-unit">/次</text>
+        </view>
+      </view>
+      <!-- 下盒子 -->
+      <view class="info-card-bottom">
+        <view class="employee-info">
+          <text class="employee-info-item">性别：{{util.formatSex(employee.sex)}}</text>
+          <text class="employee-info-item">年龄：{{employee.age || '暂无'}}</text>
+          <text class="employee-info-item">手机号：{{employee.phone || '暂无'}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- 综合评价 -->
+    <view class="review-card">
+      <view class="review-title">😊 综合评价</view>
+      <view class="review-content">{{data.review || '暂无评价'}}</view>
+    </view>
+  </view>
+  <view wx:else class="loading-tip">加载中...</view>
+    <!-- 底部预约按钮 -->
+    <view class="bottom-bar">
+      <view class="btn-book-now" bindtap="onBookNow">马上预约</view>
+    </view>
+</view>

@@ -1,0 +1,53 @@
+<view class="address-page">
+
+  <view class="address-content">
+    <!-- 地址列表 -->
+    <block wx:if="{{!isEmpty}}">
+      <view wx:for="{{addressList}}" wx:key="id" class="address-card card">
+        <view class="addr-top" data-item="{{item}}" bindtap="selectAddress">
+          <view class="addr-detail">
+            <text class="addr-tag tag tag-primary">{{item.labelName || '家'}}</text>
+            <text class="addr-text">{{item.provinceName || ''}}{{item.cityName || ''}}{{item.districtName || ''}}{{item.detail || ''}}</text>
+          </view>
+          <view class="addr-contact">
+            <text>{{item.consignee || ''}}</text>
+            <text wx:if="{{item.sex === '1'}}" class="addr-gender">先生</text>
+            <text wx:if="{{item.sex === '0'}}" class="addr-gender">女士</text>
+            <text class="addr-phone">{{item.phone || ''}}</text>
+          </view>
+        </view>
+        <view class="addr-bottom">
+          <label class="default-label" data-index="{{index}}" catchtap="setDefault">
+            <radio color="#1976d2" checked="{{item.isDefault === 1}}"/>
+            <text>设为默认</text>
+          </label>
+          <view class="addr-actions">
+            <text class="action-btn" data-type="edit" data-item="{{item}}" catchtap="addOrEdit">编辑</text>
+            <text class="action-btn danger" data-index="{{index}}" catchtap="deleteAddress">删除</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <block wx:if="{{isEmpty}}">
+      <view class="empty-state">
+        <image class="empty-icon" src="../../images/icon-nonet.png" mode="aspectFit"></image>
+        <text class="empty-text">暂无地址，请添加</text>
+      </view>
+    </block>
+
+    <!-- 加载更多提示 -->
+    <view wx:if="{{loadingMore}}" class="loading-tip">
+      <text>加载中...</text>
+    </view>
+    <view wx:if="{{!hasMore && addressList.length > 0}}" class="loading-tip">
+      <text>没有更多了</text>
+    </view>
+  </view>
+
+  <!-- 底部新增按钮 -->
+  <view class="addr-footer">
+    <button class="add-btn" type="primary" data-type="add" bindtap="addOrEdit">+ 新增地址</button>
+  </view>
+</view>

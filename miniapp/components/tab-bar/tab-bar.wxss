@@ -1,0 +1,4 @@
+.mytab{position:fixed;bottom:0;left:0;right:0;height:100rpx;background:#fff;display:flex;align-items:center;justify-content:space-around;border-top:1rpx solid #e0e0e0;z-index:9999}
+.mytab-item{flex:1;height:100%;display:flex;align-items:center;justify-content:center}
+.mytab-text{font-size:30rpx;color:#999}
+.mytab-text.active{color:#1976d2;font-weight:bold}

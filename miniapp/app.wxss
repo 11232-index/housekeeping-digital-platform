@@ -1,0 +1,32 @@
+/* Smart Home Service - Global Styles */
+page{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Segoe UI,Arial,Roboto,'PingFang SC','Microsoft YaHei',sans-serif;font-size:28rpx;color:#333;background-color:#f5f5f5;box-sizing:border-box}
+.container{min-height:100vh;box-sizing:border-box}
+.flex{display:flex}
+.flex-column{display:flex;flex-direction:column}
+.flex-center{display:flex;align-items:center;justify-content:center}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-1{flex:1}
+.text-center{text-align:center}
+.text-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.text-primary{color:#1976d2}
+.text-danger{color:#e94e3c}
+.text-muted{color:#999}
+.card{background-color:#fff;border-radius:16rpx;margin:20rpx;padding:24rpx;box-shadow:0 2rpx 12rpx rgba(0,0,0,.06)}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:80rpx;padding:0 40rpx;font-size:30rpx;border-radius:40rpx;border:none;font-weight:500}
+.btn-primary{background-color:#1976d2;color:#fff}
+.btn-danger{background-color:#e94e3c;color:#fff}
+.btn-outline{background-color:transparent;border:2rpx solid #1976d2;color:#1976d2}
+.btn-block{display:flex;width:100%}
+.price{color:#e94e3c;font-weight:bold}
+.price-symbol{font-size:24rpx}
+.price-value{font-size:36rpx}
+.tag{display:inline-block;padding:4rpx 12rpx;font-size:22rpx;border-radius:6rpx}
+.tag-primary{background-color:#e3f2fd;color:#1976d2}
+.tag-success{background-color:#e8f5e9;color:#2e7d32}
+.tag-warning{background-color:#fff3e0;color:#e65100}
+.tag-danger{background-color:#fbe9e7;color:#bf360c}
+.divider{height:1rpx;background-color:#f0f0f0;margin:20rpx 0}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120rpx 0}
+.empty-state image{width:240rpx;height:240rpx;margin-bottom:30rpx}
+.empty-state text{color:#999;font-size:28rpx}
+.load-more{display:flex;align-items:center;justify-content:center;padding:30rpx 0;color:#999;font-size:26rpx}

@@ -1,0 +1,176 @@
+<wxs module="util">
+var parseReq = function(str) {
+  if (!str) return [];
+  var parts = str.split(',');
+  var result = [];
+  for (var i = 0; i < parts.length; i++) {
+    var idx = parts[i].indexOf(':');
+    if (idx > 0) {
+      result.push({ name: parts[i].substring(0, idx), value: parts[i].substring(idx + 1) });
+    }
+  }
+  return result;
+}
+module.exports = { parseReq: parseReq };
+</wxs>
+<view class="order-page">
+  <view class="order-content">
+    <!-- 服务地址 -->
+    <view class="address-section card" bindtap="goAddress">
+      <block wx:if="{{!address}}">
+        <text class="address-placeholder">请选择服务地址</text>
+      </block>
+      <block wx:else>
+        <view class="address-info">
+          <text class="address-detail">{{address.provinceName || ''}}{{address.cityName || ''}}{{address.districtName || ''}}{{address.detail || ''}}</text>
+        </view>
+      </block>
+      <view class="arrow-right">></view>
+    </view>
+    <!-- 联系人 + 电话 -->
+    <view class="form-card card">
+      <view class="form-row">
+        <text class="form-label">联系人</text>
+        <input class="form-input" placeholder="请填写联系人" value="{{contactName}}" bindinput="onContactInput" />
+      </view>
+      <view class="form-row form-row-last">
+        <text class="form-label">联系电话</text>
+        <input class="form-input" type="number" placeholder="请填写联系电话" value="{{phone}}" bindinput="onPhoneInput" />
+      </view>
+    </view>
+    <!-- 服务信息 -->
+    <view class="order-items card">
+      <view wx:for="{{cartList}}" wx:key="cartKey" class="order-item">
+        <view class="item-row">
+          <image class="item-image" src="{{item.image}}" mode="aspectFill"></image>
+          <view class="item-info">
+            <text class="item-name">{{item.name}}</text>
+            <view class="item-bottom">
+            <text class="item-price">¥{{item.price}}</text>
+          </view>
+          </view>
+        </view>
+        <view wx:if="{{item.requirement}}" class="item-req-list">
+          <view class="item-req-row" wx:for="{{util.parseReq(item.requirement)}}" wx:key="name" wx:for-item="req">
+            <text class="item-req-name">{{req.name}}：</text><text class="item-req-val">{{req.value}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 服务需求选择区域（从后端查询的name+value） -->
+    <view wx:if="{{requirementsList.length > 0}}" class="order-requirements card">
+      <view wx:for="{{requirementsList}}" wx:key="name" wx:for-item="group" wx:for-index="gi" class="req-group">
+        <view class="req-group-title">{{group.name}}</view>
+        <view class="req-options">
+          <view wx:for="{{group.options}}" wx:key="index" wx:for-item="opt"
+                class="req-option {{group.selected === opt ? 'active' : ''}}"
+                data-parent-index="{{gi}}" data-option="{{opt}}"
+                bindtap="onSelectRequirementOption2">
+            {{opt}}
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 预约日期：家政员模式只读，其他模式可选 -->
+    <view class="form-card card">
+      <picker wx:if="{{!hkMode}}" mode="date" value="{{scheduleDate}}" start="{{minDate}}" end="{{maxDate}}" bindchange="onPickDate" class="form-picker">
+        <view class="form-row form-row-last">
+          <text class="form-label">预约日期</text>
+          <text class="form-value">{{scheduleDate || '请选择日期'}}</text>
+          <text class="arrow-right">></text>
+        </view>
+      </picker>
+      <view wx:else class="form-row form-row-last">
+        <text class="form-label">预约日期</text>
+        <text class="form-value">{{scheduleDate}}</text>
+      </view>
+    </view>
+    <!-- 预约时间：家政员模式只读，其他模式可选 -->
+    <view class="form-card card">
+      <view wx:if="{{!hkMode}}" class="form-row form-row-last" bindtap="onPickTime">
+        <text class="form-label">预约时间</text>
+        <text class="form-value">{{scheduleTime || '请选择时间'}}</text>
+        <text class="arrow-right">></text>
+      </view>
+      <view wx:else class="form-row form-row-last">
+        <text class="form-label">预约时间</text>
+        <text class="form-value">{{scheduleTime}}</text>
+      </view>
+    </view>
+    <!-- 服务时长 -->
+    <view class="form-card card">
+      <view class="form-row form-row-last" bindtap="onPickDuration">
+        <text class="form-label">服务时长</text>
+        <text class="form-value">{{serviceDuration || '请选择时长'}}</text>
+        <text class="arrow-right">></text>
+      </view>
+    </view>
+    <!-- 备注 -->
+    <view class="order-extra card">
+      <view class="extra-item" bindtap="goRemark">
+        <text>备注</text><text class="extra-value">{{remark || '添加备注...'}}</text><text class="arrow-right">></text>
+      </view>
+    </view>
+  </view>
+  <view class="order-footer">
+    <view class="footer-price">
+      <text wx:if="{{!singleMode}}" class="price-label">合计：</text>
+      <text class="price-symbol">¥</text><text class="price-value">{{totalPrice}}</text>
+    </view>
+    <view class="footer-btn {{submitting ? 'btn-disabled' : ''}}" bindtap="submitOrder">{{submitting ? '提交中...' : '提交预约信息'}}</view>
+  </view>
+
+  <!-- 预约时间弹窗 -->
+  <view class="pop-mask" wx:if="{{showTimePop}}" bindtap="closeTimePop">
+    <view class="option-pop" catchtap="stopPropagation">
+      <view class="option-pop-title">选择预约时间</view>
+      <view class="option-pop-body">
+        <view class="option-grid">
+          <view wx:for="{{['8:00~9:00','9:00~10:00','10:00~11:00','11:00~12:00','14:00~15:00','15:00~16:00','16:00~17:00','17:00~18:00']}}" wx:key="index"
+                class="option-item {{scheduleTime === item ? 'active' : ''}}"
+                data-index="{{index}}" bindtap="onSelectTime">
+            <text class="option-item-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!-- 服务时长弹窗 -->
+  <view class="pop-mask" wx:if="{{showDurationPop}}" bindtap="closeDurationPop">
+    <view class="option-pop" catchtap="stopPropagation">
+      <view class="option-pop-title">选择服务时长</view>
+      <view class="option-pop-body">
+        <view class="option-grid">
+          <view wx:for="{{['2小时','4小时','半天','全天']}}" wx:key="index"
+                class="option-item {{serviceDuration === item ? 'active' : ''}}"
+                data-index="{{index}}" bindtap="onSelectDuration">
+            <text class="option-item-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!-- 需求选择弹窗 -->
+  <view class="pop-mask" wx:if="{{showRequirementPop}}" bindtap="closeRequirementPop">
+    <view class="spec-pop" catchtap="stopPropagation">
+      <view class="spec-pop-title">选择服务需求</view>
+      <scroll-view class="spec-pop-body" scroll-y="true">
+        <view wx:for="{{currentRequirements}}" wx:key="index" class="spec-group">
+          <view class="spec-group-title">{{item.name}}</view>
+          <view class="spec-options">
+            <view wx:for="{{item.options}}" wx:key="index" wx:for-item="opt" wx:for-index="optIdx"
+                  class="spec-option {{item.selected === opt ? 'active' : ''}}"
+                  data-req-index="{{index}}" data-option-index="{{optIdx}}"
+                  bindtap="onSelectRequirementOption">
+              {{opt}}
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="spec-pop-footer">
+        <view class="spec-confirm-btn" bindtap="onConfirmRequirement">确定</view>
+      </view>
+      <text class="spec-close" bindtap="closeRequirementPop">✕</text>
+    </view>
+  </view>
+</view>

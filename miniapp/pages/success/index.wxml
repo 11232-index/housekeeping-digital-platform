@@ -1,0 +1,12 @@
+<view class="success-page">
+  <view class="success-content">
+    <view class="success-icon"><text class="success-check">✓</text></view>
+    <text class="success-title">下单成功</text>
+    <text class="success-eta">预计服务时间：{{eta}}</text>
+    <text class="success-desc">我们将尽快与您联系确认具体服务时间</text>
+  </view>
+  <view class="success-buttons">
+    <button class="success-btn outline" bindtap="goIndex">返回首页</button>
+    <button class="success-btn primary" bindtap="goOrder">查看订单</button>
+  </view>
+</view>

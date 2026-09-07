@@ -14,3 +14,10 @@ application-dev.yml
 *.txt
 # 接口文档
 /API接口文档.md
+
+# 前端依赖/构建产物/本地文件
+**/node_modules/
+**/dist/
+dump.rdb
+project.private.config.json
+*.local

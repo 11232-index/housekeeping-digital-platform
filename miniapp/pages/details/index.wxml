@@ -1,0 +1,72 @@
+<wxs module="util">
+var getStatusText = function(status) {
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  return map[status] || '未知';
+};
+var parseReq = function(str) {
+  if (!str) return [];
+  var parts = str.split(',');
+  var result = [];
+  for (var i = 0; i < parts.length; i++) {
+    var idx = parts[i].indexOf(':');
+    if (idx > 0) {
+      result.push({ name: parts[i].substring(0, idx), value: parts[i].substring(idx + 1) });
+    }
+  }
+  return result;
+};
+module.exports = { getStatusText: getStatusText, parseReq: parseReq };
+</wxs>
+<view class="details-page">
+  <scroll-view class="details-content" scroll-y="true">
+    <view class="card status-card">
+      <view class="status-title">{{util.getStatusText(order.status)}}</view>
+      <block wx:if="{{order.status === 1}}"><view class="status-time">请在15分钟内完成支付，超时将自动取消</view></block>
+      <view class="status-actions">
+        <button wx:if="{{order.status === 1}}" class="btn btn-outline" size="mini" bindtap="handleCancel">取消订单</button>
+        <button wx:if="{{order.status === 1}}" class="btn btn-primary" size="mini" bindtap="handlePay">立即支付</button>
+        <button wx:if="{{order.status === 2}}" class="btn btn-outline" size="mini" bindtap="handleCancel">申请退款</button>
+        <button wx:if="{{order.status === 2}}" class="btn btn-primary" size="mini" bindtap="handleReminder">催促接单</button>
+        <button wx:if="{{order.status === 5}}" class="btn btn-outline" size="mini" bindtap="oneMoreOrder">再来一单</button>
+      </view>
+    </view>
+    <view class="card">
+      <view class="shop-name">智能家政服务</view>
+      <view wx:for="{{items}}" wx:key="id" class="detail-item">
+        <view class="item-row">
+          <image class="item-image" src="{{item.image || '../../images/logo.png'}}" mode="aspectFill"></image>
+          <view class="item-info">
+            <text class="item-name">{{item.name}}</text>
+            <view class="item-bottom">
+              <text class="item-price">¥{{item.amount || '0.00'}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{item.requirement}}" class="item-req-list">
+          <view class="item-req-row" wx:for="{{util.parseReq(item.requirement)}}" wx:key="name" wx:for-item="req">
+            <text class="item-req-name">{{req.name}}：</text><text class="item-req-val">{{req.value}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="order-summary"><view class="summary-row"><text>合计</text><text class="summary-price">¥{{order.amount || '0.00'}}</text></view></view>
+    </view>
+    <view class="card">
+      <view class="info-row"><text class="info-label">预约时间</text><text>{{order.scheduleDate}} {{order.scheduleTime}}</text></view>
+      <view class="info-row"><text class="info-label">服务时长</text><text>{{order.serviceDuration || '--'}}</text></view>
+      <view wx:if="{{order.remark}}" class="info-row"><text class="info-label">备注</text><text>{{order.remark}}</text></view>
+      <view class="info-row"><text class="info-label">服务地址</text><text>{{order.address || ''}}</text></view>
+      <view class="info-row"><text class="info-label">联系人</text><text>{{order.contactName || ''}}</text></view>
+      <view class="info-row"><text class="info-label">联系电话</text><text>{{order.phone || ''}}</text></view>
+    </view>
+    <view class="card">
+      <view class="info-row"><text class="info-label">订单编号</text><text>{{order.number || order.id}}</text></view>
+      <view class="info-row"><text class="info-label">下单时间</text><text>{{order.orderTime || ''}}</text></view>
+      <view class="info-row"><text class="info-label">支付方式</text><text>{{order.payMethod === 1 ? '微信支付' : order.payMethod === 2 ? '支付宝支付' : '--'}}</text></view>
+      <view wx:if="{{order.payTime}}" class="info-row"><text class="info-label">付款时间</text><text>{{order.payTime}}</text></view>
+      <view wx:if="{{order.cancelReason && (order.status === 6 || order.status === 7)}}" class="info-row"><text class="info-label">取消原因</text><text>{{order.cancelReason}}</text></view>
+      <view wx:if="{{order.cancelTime && order.status === 7}}" class="info-row"><text class="info-label">取消时间</text><text>{{order.cancelTime}}</text></view>
+    </view>
+    <view wx:if="{{housekeeperPhone}}" class="card contact-card" bindtap="handleCallHousekeeper"><text>联系家政员</text></view>
+    <view class="card contact-card" bindtap="handlePhone"><text>联系客服</text></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,6 @@
+.nonet-page{min-height:100vh;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.nonet-content{display:flex;flex-direction:column;align-items:center;padding:60rpx}
+.nonet-icon{width:240rpx;height:240rpx;margin-bottom:40rpx}
+.nonet-title{font-size:36rpx;font-weight:bold;color:#333;margin-bottom:16rpx}
+.nonet-desc{font-size:26rpx;color:#999;margin-bottom:40rpx}
+.retry-btn{padding:20rpx 80rpx;background:#1976d2;color:#fff;border-radius:40rpx;font-size:28rpx}

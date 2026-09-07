@@ -1,0 +1,9 @@
+<view class="detail-page">
+  <view wx:if="{{data}}" class="detail-card">
+    <view class="detail-title">{{data.title}}</view>
+    <view class="detail-meta">{{data.createTime}} 最新动态</view>
+    <view class="detail-content">{{data.content}}</view>
+  </view>
+
+  <view wx:else class="loading-tip">加载中...</view>
+</view>

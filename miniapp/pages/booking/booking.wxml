@@ -1,0 +1,167 @@
+<view class="booking-page">
+  <!-- 顶部导航 -->
+  <view class="tab-nav">
+    <view class="tab-nav-item {{currentTab === 'service' ? 'active' : ''}}" data-tab="service" bindtap="onTabSwitch">
+      <text>服务预约</text>
+    </view>
+    <view class="tab-nav-item {{currentTab === 'housekeeper' ? 'active' : ''}}" data-tab="housekeeper" bindtap="onTabSwitch">
+      <text>家政员预约</text>
+    </view>
+  </view>
+
+  <!-- 服务预约内容 -->
+  <view wx:if="{{currentTab === 'service'}}">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <icon type="search" size="16" class="search-icon"></icon>
+      <input class="search-input" placeholder="搜索服务或服务套餐" value="{{searchKeyword}}" bindinput="onSearchInput" bindconfirm="onSearchConfirm" confirm-type="search" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
+      <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="clearSearch">✕</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view wx:if="{{showHistory && searchHistory.length > 0 && !isSearching}}" class="search-history">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <view class="history-clear" bindtap="clearSearchHistory">
+        <text class="history-clear-icon">✕</text>
+      </view>
+    </view>
+    <view class="history-list">
+      <view wx:for="{{searchHistory}}" wx:key="id" class="history-item" data-keyword="{{item.keyword}}" bindtap="tapHistoryItem">
+        <text class="history-keyword">{{item.keyword}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!isSearching || serviceList.length > 0}}" class="main-content">
+    <scroll-view wx:if="{{!isSearching}}" class="category-sidebar" scroll-y="true" scroll-with-animation="true" scroll-into-view="{{itemId}}">
+      <view wx:for="{{categoryList}}" wx:key="id" class="category-item {{categoryIndex === index ? 'active' : ''}}" id="target{{index}}" data-index="{{index}}" bindtap="switchMenu">
+        <text>{{item.name}}</text>
+      </view>
+      <view class="category-placeholder"></view>
+    </scroll-view>
+    <scroll-view class="service-list" scroll-y="true">
+      <block wx:if="{{serviceList.length > 0}}">
+        <view wx:for="{{serviceList}}" wx:key="id" class="service-item">
+          <view class="service-top">
+            <image class="service-image" src="{{item.image}}" mode="aspectFill" data-item="{{item}}" bindtap="showDetail"></image>
+            <view class="service-summary">
+              <view class="service-name" data-item="{{item}}" bindtap="showDetail">{{item.name}}</view>
+              <view class="service-status">
+                <text wx:if="{{item.status === 1}}" class="status-tag available">可预约</text>
+                <text wx:if="{{item.status === 0}}" class="status-tag resting">休息中</text>
+              </view>
+              <view class="service-price-card"><text class="price-symbol">¥</text><text class="price-value">{{item.price}}</text></view>
+            </view>
+          </view>
+          <view class="service-desc">{{item.description || '暂无描述'}}</view>
+          <view class="service-action">
+            <view wx:if="{{item.status === 1}}" class="btn-select-requirement" data-item="{{item}}" bindtap="addToCart">加入预约清单</view>
+            <text wx:if="{{item.status === 0}}" class="rest-text">休息中</text>
+          </view>
+        </view>
+        <view class="service-placeholder"></view>
+      </block>
+      <block wx:elif="{{!isSearching}}">
+        <view class="empty-service"><text>该分类下暂无服务</text></view>
+      </block>
+    </scroll-view>
+  </view>
+  <view wx:if="{{isSearching && serviceList.length === 0}}" class="empty-tip">暂无服务</view>
+
+  <view class="pop-mask" wx:if="{{showDetailPop}}" bindtap="closeDetail">
+    <view class="detail-pop" catchtap="stopPropagation">
+      <image class="detail-image" src="{{detailService.image}}" mode="aspectFill"></image>
+      <view class="detail-title">{{detailService.name}}</view>
+      <view class="detail-desc">{{detailService.description || detailService.name}}</view>
+      <view class="detail-price"><text class="price-symbol">¥</text><text class="price-value">{{detailService.price}}</text></view>
+      <view class="detail-action">
+        <view class="btn-add-big" data-item="{{detailService}}" bindtap="addToCart">加入预约清单</view>
+      </view>
+      <text class="detail-close" bindtap="closeDetail">✕</text>
+    </view>
+  </view>
+
+  <view class="pop-mask" wx:if="{{showSpecPop}}" bindtap="closeSpecPop">
+    <view class="spec-pop" catchtap="stopPropagation">
+      <view class="spec-pop-title">{{currentService.name}}</view>
+      <scroll-view class="spec-pop-body" scroll-y="true">
+        <view wx:for="{{currentRequirements}}" wx:key="index" class="spec-group">
+          <view class="spec-group-title">{{item.name}}</view>
+          <view class="spec-options">
+            <view wx:for="{{item.options}}" wx:key="index" wx:for-item="opt" wx:for-index="optIdx"
+                  class="spec-option {{item.selected === opt ? 'active' : ''}}"
+                  data-req-index="{{index}}" data-option-index="{{optIdx}}"
+                  bindtap="onSelectRequirementOption">
+              {{opt}}
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="spec-pop-footer">
+        <view class="spec-confirm-btn" bindtap="onConfirmRequirement">加入预约清单</view>
+      </view>
+      <text class="spec-close" bindtap="closeSpecPop">✕</text>
+    </view>
+  </view>
+
+  <view class="pop-mask" wx:if="{{loading}}">
+    <view class="loading-wrap"><image class="loading-gif" src="../../images/loading.gif"></image></view>
+  </view>
+  </view>
+
+  <!-- 家政员预约 -->
+  <view wx:if="{{currentTab === 'housekeeper'}}" class="hk-tab">
+    <view class="search-bar">
+      <view class="search-input-wrap">
+        <icon type="search" size="16" class="search-icon"></icon>
+        <input class="search-input" placeholder="搜索家政员" value="{{hkKeyword}}" bindinput="onHkInput" bindconfirm="onHkSearch" confirm-type="search" />
+        <text wx:if="{{hkKeyword}}" class="search-clear" bindtap="onHkClear">✕</text>
+      </view>
+    </view>
+
+    <view wx:if="{{hkShowHistory && hkSearchHistory.length > 0}}" class="search-history">
+      <view class="history-header">
+        <text class="history-title">搜索历史</text>
+        <view class="history-clear" bindtap="hkClearSearchHistory">
+          <text class="history-clear-icon">✕</text>
+        </view>
+      </view>
+      <view class="history-list">
+        <view wx:for="{{hkSearchHistory}}" wx:key="id" class="history-item" data-keyword="{{item.keyword}}" bindtap="hkTapHistoryItem">
+          <text class="history-keyword">{{item.keyword}}</text>
+        </view>
+      </view>
+    </view>
+
+    <scroll-view wx:if="{{hkList.length > 0}}" class="hk-list-wrap" scroll-y="true" bindscrolltolower="hkScrollLower" lower-threshold="50" style="height:{{hkScrollHeight}}rpx">
+      <view wx:for="{{hkList}}" wx:key="id" class="hk-card" data-id="{{item.id}}" bindtap="onHkDetailTap">
+        <image wx:if="{{item.picture}}" class="hk-card-img" src="{{item.picture}}" mode="aspectFill"></image>
+        <view wx:else class="hk-card-img hk-card-img-empty"></view>
+        <view class="hk-card-info">
+          <text class="hk-card-name">{{item.name}}</text>
+          <view class="hk-card-tags">
+            <text wx:if="{{item.rank === 1}}" class="hk-tag rank-gold">金牌</text>
+            <text wx:if="{{item.rank === 2}}" class="hk-tag rank-silver">银牌</text>
+            <text wx:if="{{item.rank === 3}}" class="hk-tag rank-bronze">铜牌</text>
+            <view wx:if="{{item.rating > 0}}" class="hk-stars">
+              <view class="hk-stars-empty">★★★★★</view>
+              <view class="hk-stars-fill" style="width:{{item.rating / 5 * 100}}%">★★★★★</view>
+            </view>
+            <text wx:if="{{item.rating > 0}}" class="hk-rating-num">{{item.ratingText}}</text>
+          </view>
+          <text class="hk-card-price">¥{{item.price}}/次</text>
+        </view>
+        <view class="hk-card-btn" data-id="{{item.id}}" catchtap="onHkDetailTap">预约</view>
+      </view>
+      <view wx:if="{{hkHasMore}}" class="load-more" bindtap="hkLoadMore">加载更多</view>
+      <view wx:if="{{hkList.length > 0 && !hkHasMore}}" class="no-more">— 没有更多了 —</view>
+    </scroll-view>
+    <view wx:elif="{{!hkLoading}}" class="empty-tip">暂无家政员</view>
+    <view wx:if="{{hkLoading}}" class="loading-tip">加载中...</view>
+  </view>
+
+  <tab-bar selected="{{1}}"></tab-bar>
+</view>

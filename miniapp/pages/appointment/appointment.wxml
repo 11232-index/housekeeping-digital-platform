@@ -1,0 +1,30 @@
+<view class="appointment-page">
+  <!-- 第一个盒子：家政员信息 -->
+  <view wx:if="{{housekeeper}}" class="hk-card">
+    <image wx:if="{{housekeeper.picture}}" class="hk-avatar" src="{{housekeeper.picture}}" mode="aspectFill"></image>
+    <view wx:else class="hk-avatar hk-avatar-empty"></view>
+    <text class="hk-name">{{housekeeper.name}}</text>
+    <view class="hk-rating">
+      <text wx:if="{{housekeeper.rating > 0}}" class="rating-num">{{housekeeper.ratingText}}</text>
+      <text wx:else class="rating-none">暂无</text>
+      <text class="rating-label">分</text>
+    </view>
+  </view>
+
+  <!-- 第二个盒子：预约时间选择 -->
+  <view wx:if="{{scheduleList.length > 0}}" class="schedule-card">
+    <view class="schedule-title">选择预约时间</view>
+    <view wx:for="{{scheduleList}}" wx:key="id" class="schedule-item {{selectedSlot === index ? 'selected' : ''}}"
+          data-index="{{index}}" bindtap="onSelectSlot">
+      <text class="schedule-date">{{item.scheduleDate}}</text>
+      <text class="schedule-time">{{item.startTime}} ~ {{item.endTime}}</text>
+      <view wx:if="{{selectedSlot === index}}" class="check-mark">✓</view>
+    </view>
+  </view>
+  <view wx:elif="{{housekeeper && scheduleList.length === 0}}" class="empty-slot">暂无可用时段</view>
+
+  <!-- 底部按钮 -->
+  <view wx:if="{{housekeeper}}" class="appointment-footer">
+    <view class="footer-btn" bindtap="onBookNow">填写预约信息</view>
+  </view>
+</view>

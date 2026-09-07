@@ -1,0 +1,35 @@
+<view class="whome-page">
+  <!-- 家政员信息头部 -->
+  <view class="whome-header">
+    <view class="whome-avatar-wrap">
+      <image class="whome-avatar" src="{{workerInfo.picture || '../../images/logo.png'}}" mode="aspectFill"></image>
+    </view>
+    <view class="whome-info">
+      <view class="whome-name-row">
+        <text class="whome-name">{{workerInfo.name || '家政员'}}</text>
+        <text class="whome-tag">家政员</text>
+      </view>
+      <text class="whome-id">员工号：{{workerInfo.employeeId || '--'}}</text>
+    </view>
+  </view>
+
+  <!-- 功能模块 -->
+  <view class="whome-modules">
+    <view class="module-card" bindtap="goOrder">
+      <text class="module-icon">📋</text>
+      <view class="module-info">
+        <text class="module-name">订单管理</text>
+        <text class="module-desc">查看/处理分配给我的服务订单</text>
+      </view>
+      <text class="module-arrow">></text>
+    </view>
+    <view class="module-card" bindtap="goProfile">
+      <text class="module-icon">👤</text>
+      <view class="module-info">
+        <text class="module-name">个人中心</text>
+        <text class="module-desc">我的资料、排班与设置</text>
+      </view>
+      <text class="module-arrow">></text>
+    </view>
+  </view>
+</view>

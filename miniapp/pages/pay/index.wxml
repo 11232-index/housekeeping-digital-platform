@@ -1,0 +1,27 @@
+<view class="pay-page">
+  <view class="pay-content">
+    <view class="amount-card card">
+      <text class="amount-label">订单金额</text>
+      <view class="amount-value"><text class="amount-symbol">¥</text><text class="amount-num">{{amount}}</text></view>
+      <view class="countdown"><text>剩余时间：{{countdownText}}</text></view>
+    </view>
+    <view class="pay-methods card">
+      <view class="method-row">
+        <text class="method-label">支付方式</text>
+      </view>
+      <view class="method-item {{payMethod === 1 ? 'active' : ''}}" data-method="1" bindtap="selectPayMethod">
+        <text class="method-name">微信支付</text>
+        <view class="method-radio {{payMethod === 1 ? 'checked' : ''}}"></view>
+      </view>
+      <view class="method-item {{payMethod === 2 ? 'active' : ''}}" data-method="2" bindtap="selectPayMethod">
+        <text class="method-name">支付宝支付</text>
+        <view class="method-radio {{payMethod === 2 ? 'checked' : ''}}"></view>
+      </view>
+    </view>
+  </view>
+  <view class="pay-footer">
+    <view class="pay-btn {{isPaying ? 'disabled' : ''}}" bindtap="handlePay">
+      {{isPaying ? '处理中...' : '确认支付'}}
+    </view>
+  </view>
+</view>

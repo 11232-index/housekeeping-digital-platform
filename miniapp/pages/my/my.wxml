@@ -1,0 +1,77 @@
+<wxs module="util">
+var getStatusText = function(status) {
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  return map[status] || '未知';
+};
+var getStatusClass = function(status) {
+  if (status === 1) return 'tag-warning';
+  if (status === 2) return 'tag-primary';
+  if (status === 3 || status === 4) return 'tag-info';
+  if (status === 5) return 'tag-success';
+  if (status === 6) return 'tag-warning';
+  return 'tag-gray';
+};
+var orderTitle = function(list) {
+  if (!list || list.length === 0) return '--';
+  if (list.length === 1) return list[0].name;
+  return list[0].name + ' 等' + list.length + '项';
+};
+var firstReq = function(list) {
+  if (list && list.length > 0) return list[0].requirement || '';
+  return '';
+};
+module.exports = { getStatusText: getStatusText, getStatusClass: getStatusClass, orderTitle: orderTitle, firstReq: firstReq };
+</wxs>
+<view class="my-page">
+  <view class="my-header">
+    <view class="user-avatar-wrap"><image class="user-avatar" src="{{userInfo.avatarUrl || '../../images/logo.png'}}" mode="aspectFill"></image></view>
+    <text class="user-name">{{userInfo.nickName || '用户'}}</text>
+    <text class="user-phone">{{userInfo.phone || '138****0000'}}</text>
+  </view>
+
+  <!-- 家政员工作台入口 -->
+  <view class="worker-entry" bindtap="goWorkerLogin">
+    <text class="worker-entry-icon">🧹</text>
+    <view class="worker-entry-info">
+      <text class="worker-entry-title">家政员工作台</text>
+      <text class="worker-entry-sub">家政员登录，接单/排班从这里进入</text>
+    </view>
+    <text class="worker-entry-arrow">></text>
+  </view>
+
+  <view class="my-menu">
+    <view class="menu-item" bindtap="goAddress">
+      <text class="menu-icon">📍</text><text class="menu-name">地址管理</text><text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goHistoryOrder">
+      <text class="menu-icon">📋</text><text class="menu-name">历史订单</text><text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="logout">
+      <text class="menu-icon">🚪</text><text class="menu-name" style="color:#e94e3c">退出登录</text><text class="menu-arrow">></text>
+    </view>
+  </view>
+  <view class="my-orders">
+    <view class="orders-title">最近订单</view>
+    <block wx:if="{{recentOrders.length > 0}}">
+      <view wx:for="{{recentOrders}}" wx:key="id" class="order-card">
+        <view class="oc-top">
+          <text class="oc-status-tag {{util.getStatusClass(item.status)}}">{{util.getStatusText(item.status)}}</text>
+          <text class="oc-number">订单号：{{item.number}}</text>
+        </view>
+        <view class="oc-body">
+          <text class="oc-name">{{util.orderTitle(item.orderDetailList)}}</text>
+          <text class="oc-contact">姓名：{{item.contactName || '--'}}</text>
+          <text class="oc-time">时间：{{item.scheduleDate}} {{item.scheduleTime}}</text>
+          <text class="oc-amount">合计：¥{{item.amount}}</text>
+        </view>
+        <view class="oc-actions">
+          <view class="oc-btn oc-btn-outline" data-id="{{item.id}}" catchtap="goDetail">查看详情</view>
+          <view wx:if="{{item.status === 1}}" class="oc-btn oc-btn-primary" data-id="{{item.id}}" catchtap="goPay">付款</view>
+          <view wx:if="{{item.status === 2}}" class="oc-btn oc-btn-outline" data-id="{{item.id}}" catchtap="cancelOrder">申请退款</view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="orders-empty">暂无订单</view>
+  </view>
+  <tab-bar selected="{{3}}"></tab-bar>
+</view>
