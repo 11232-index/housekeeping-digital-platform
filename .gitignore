@@ -5,3 +5,12 @@
 *Test.java
 **/test/
 application-dev.yml
+
+# 真实密钥配置（本机私有，不提交）
+application-dev.yml
+# 根目录旧版 SQL 脚本（建表统一放 db/ 目录）
+/*.sql
+# 说明/排查 txt 文档
+*.txt
+# 接口文档
+/API接口文档.md
