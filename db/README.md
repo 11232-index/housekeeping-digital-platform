@@ -35,7 +35,7 @@ Get-ChildItem [0-9][0-9]_*.sql | Sort-Object Name | ForEach-Object { Write-Host 
 | `00_create_database.sql` | 建库，第一步 |
 | `01_*.sql` ~ `31_*.sql` | 建表，按编号顺序执行 |
 | `migrate/` | **只给「已经有数据的老库」做增量升级用**，新库不要跑 |
-| `backup/` | 某次改数据前的快照备份，仅供参考，不要执行 |
+| `backup/` | 某次改数据前的快照备份，**含订单联系人信息、已被 `.gitignore` 排除，只在你本机存在**，仅供参考，不要执行 |
 
 ### 关于编号
 

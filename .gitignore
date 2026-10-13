@@ -10,6 +10,8 @@ application-dev.yml
 application-dev.yml
 # 根目录旧版 SQL 脚本（建表统一放 db/ 目录）
 /*.sql
+# 数据快照备份（含 orders 的联系人/电话/地址，只留本地不入库）
+db/backup/
 # 说明/排查 txt 文档
 *.txt
 # 接口文档
