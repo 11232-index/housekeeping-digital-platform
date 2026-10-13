@@ -4,13 +4,6 @@ var util = require('../../utils/util.js');
 Page({
   data: { username: '', password: '', submitting: false },
 
-  onLoad: function() {
-    // 已登录过家政员则直接进工作台
-    if (wx.getStorageSync('workerToken')) {
-      wx.redirectTo({ url: '/pages/workerHome/workerHome' });
-    }
-  },
-
   onInput: function(e) {
     var field = e.currentTarget.dataset.field;
     var data = {};

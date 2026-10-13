@@ -14,3 +14,4 @@
 .module-name{display:block;font-size:32rpx;font-weight:bold;color:#333}
 .module-desc{display:block;font-size:24rpx;color:#999;margin-top:8rpx}
 .module-arrow{font-size:32rpx;color:#ccc}
+.whome-logout{margin:40rpx 20rpx 0;height:88rpx;line-height:88rpx;text-align:center;background:#fff;color:#e94e3c;font-size:30rpx;border-radius:16rpx}

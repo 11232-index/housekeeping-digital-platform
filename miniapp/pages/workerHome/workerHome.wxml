@@ -32,4 +32,7 @@
       <text class="module-arrow">></text>
     </view>
   </view>
+
+  <!-- 退出登录 -->
+  <view class="whome-logout" bindtap="doLogout">退出登录</view>
 </view>
