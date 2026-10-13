@@ -42,4 +42,10 @@ public class OrderSubmitDTO implements Serializable {
 
     /** 单条明细（提交单项时传入） */
     private OrderItemDTO item;
+
+    /**
+     * 使用的优惠券id（可选）。
+     * 只有「服务预约」能用券 —— 家政员预约即使传了也会被忽略。
+     */
+    private Long voucherId;
 }

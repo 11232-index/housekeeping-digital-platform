@@ -1,5 +1,7 @@
 package com.smart.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -65,6 +67,18 @@ public class Order implements Serializable {
     /** 关联housekeeper_schedule表id */
     private Long housekeeperScheduleId;
 
+    /**
+     * 该订单由哪位家政员接单（用户下单指定 或 员工端指派）。
+     * 注意：它不用于区分订单类型 —— 区分「家政员订单/服务订单」仍然只看 order_detail.housekeeper_id。
+     */
+    private Long housekeeperId;
+
+    /** 员工指派时刻（一级提醒的计时起点；用户指定订单为空） */
+    private LocalDateTime assignTime;
+
+    /** 一级提醒已推送时刻（幂等标记，防止定时任务每分钟重复推送） */
+    private LocalDateTime remindTime;
+
     /** 预约日期 */
     private java.time.LocalDate scheduleDate;
 
@@ -86,8 +100,24 @@ public class Order implements Serializable {
     /** 支付状态 */
     private Integer payStatus;
 
-    /** 订单金额 */
+    /** 订单金额（用了优惠券时这里就是折后的实付金额） */
     private BigDecimal amount;
+
+    /**
+     * 使用的优惠券id（没用券为 NULL）。
+     * 同样是雪花id，必须序列化成字符串给前端（见 UserVoucherVO#voucherId 的说明）。
+     */
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long voucherId;
+
+    /** 优惠券标题（快照，订单详情直接展示，不用回查券表） */
+    private String voucherTitle;
+
+    /** 折扣率快照（80=八折） */
+    private Long voucherDiscount;
+
+    /** 优惠金额（原价 - 折后实付） */
+    private BigDecimal discountAmount;
 
     /** 备注信息 */
     private String remark;
@@ -101,8 +131,11 @@ public class Order implements Serializable {
     /** 联系人 */
     private String contactName;
 
-    /** 取消原因 */
+    /** 取消原因（记录「为什么变成了待退款(6)」：超时未接单/员工取消/家政员拒单/用户申请） */
     private String cancelReason;
+
+    /** 退款原因（员工端在待退款(6) → 已取消(7) 时填写） */
+    private String refundReason;
 
     /** 取消时间 */
     private LocalDateTime cancelTime;

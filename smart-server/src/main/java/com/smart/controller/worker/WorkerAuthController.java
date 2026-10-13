@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 家政员小程序端认证（公开接口，不挂在 /employee/** 下以避免被员工端拦截器拦截）
+ * 家政员小程序端认证
+ * <p>
+ * /worker/** 已纳入 JwtTokenEmployeeInterceptor（见 WebMvcConfiguration#addInterceptors），
+ * 登录接口通过 excludePathPatterns("/worker/auth/login") 保持公开；
+ * 家政员登录签发的是员工令牌（claims 存 empId），与 /employee/** 同源。
  */
 @RestController
 @RequestMapping("/worker/auth")

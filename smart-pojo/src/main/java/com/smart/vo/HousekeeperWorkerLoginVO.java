@@ -30,6 +30,12 @@ public class HousekeeperWorkerLoginVO implements Serializable {
     /** 家政员头像地址（可能为空） */
     private String picture;
 
+    /** 岗位（employee_detail.position，可能为空） */
+    private String position;
+
+    /** 手机号（岗位为空时供前端兜底展示） */
+    private String phone;
+
     /** 员工令牌（调用 /employee/** 等受保护接口时放请求头 token） */
     private String token;
 

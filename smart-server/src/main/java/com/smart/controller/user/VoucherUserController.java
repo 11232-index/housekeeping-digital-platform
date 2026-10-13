@@ -1,8 +1,10 @@
 package com.smart.controller.user;
 
+import com.smart.context.BaseContext;
 import com.smart.dto.VoucherSeckillDTO;
 import com.smart.result.Result;
 import com.smart.service.VoucherService;
+import com.smart.vo.UserVoucherVO;
 import com.smart.vo.VoucherVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,16 @@ public class VoucherUserController {
         log.info("用户领取/秒杀优惠券：{}", voucherSeckillDTO);
         VoucherVO voucherVO = voucherService.seckillVoucher(voucherSeckillDTO.getVoucherId());
         return Result.success(voucherVO);
+    }
+
+    /**
+     * 我的优惠券（含已使用，按领取时间倒序）
+     */
+    @GetMapping("/mine")
+    public Result<List<UserVoucherVO>> mine() {
+        Long userId = BaseContext.getCurrentId();
+        List<UserVoucherVO> list = voucherService.listMyVouchers(userId);
+        return Result.success(list);
     }
 
 }

@@ -28,9 +28,18 @@ public class OrderPageQueryDTO implements Serializable {
     /** 联系人（模糊搜索） */
     private String contactName;
 
+    /** 手机号（模糊搜索） */
+    private String phone;
+
     /** 下单开始时间 */
     private String beginTime;
 
     /** 下单截止时间 */
     private String endTime;
+
+    /**
+     * 订单类型：service=服务订单（服务项目/服务套餐），housekeeper=家政员订单，为空查全部。
+     * 订单表本身没有类型字段，依据 order_detail 上的 service_item_id/service_package_id/housekeeper_id 判断。
+     */
+    private String orderType;
 }

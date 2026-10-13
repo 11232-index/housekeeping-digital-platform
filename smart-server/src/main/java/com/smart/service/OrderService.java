@@ -5,9 +5,12 @@ import com.smart.dto.OrderDTO;
 import com.smart.dto.OrderItemDTO;
 import com.smart.dto.OrderPageQueryDTO;
 import com.smart.dto.OrderSubmitDTO;
+import com.smart.vo.HousekeeperCandidateVO;
 import com.smart.vo.OrderSubmitVO;
 import com.smart.vo.OrderVO;
 import com.github.pagehelper.Page;
+
+import java.util.List;
 
 /**
  * 订单服务接口
@@ -81,4 +84,33 @@ public interface OrderService {
      * @return 订单号
      */
     String generateOrderNumber();
+
+    /**
+     * 员工端查询可指派的家政员候选
+     * @param orderId 订单id（必须是待接单且尚未指派的服务订单）
+     * @return 该订单服务时段内空闲的家政员列表
+     */
+    List<HousekeeperCandidateVO> listAssignCandidates(Long orderId);
+
+    /**
+     * 员工端指派家政员：写入订单级家政员与指派时刻，并占用该家政员此时段。
+     * 订单状态不变，仍停在「待接单(2)」等家政员确认。
+     * @param orderId 订单id
+     * @param housekeeperId 家政员id
+     */
+    void assignOrder(Long orderId, Long housekeeperId);
+
+    /**
+     * 员工端取消待接单订单：置为「待退款(6)」并记录取消原因，同时释放已占用时段
+     * @param orderId 订单id
+     * @param cancelReason 取消原因（必填）
+     */
+    void staffCancelOrder(Long orderId, String cancelReason);
+
+    /**
+     * 员工端确认退款：待退款(6) → 已取消(7)，记录退款原因，支付状态置为「退款」
+     * @param orderId 订单id
+     * @param refundReason 退款原因（必填）
+     */
+    void completeRefund(Long orderId, String refundReason);
 }

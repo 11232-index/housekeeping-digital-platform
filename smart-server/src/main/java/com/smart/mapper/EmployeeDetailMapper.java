@@ -12,8 +12,8 @@ public interface EmployeeDetailMapper {
     EmployeeDetail getByEmployeeId(Long employeeId);
 
     @AutoFill(OperationType.INSERT) // 插入操作自动填充 createTime、updateTime
-    @Insert("insert into employee_detail (employee_id, education, past_experience, position, salary, work_status, contract, health_certificate, create_time, update_time) " +
-            "values (#{employeeId}, #{education}, #{pastExperience}, #{position}, #{salary}, #{workStatus}, #{contract}, #{healthCertificate}, #{createTime}, #{updateTime})")
+    @Insert("insert into employee_detail (employee_id, education, past_experience, position, salary, work_status, schedule, contract, health_certificate, create_time, update_time) " +
+            "values (#{employeeId}, #{education}, #{pastExperience}, #{position}, #{salary}, #{workStatus}, #{schedule}, #{contract}, #{healthCertificate}, #{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(EmployeeDetail employeeDetail);
 

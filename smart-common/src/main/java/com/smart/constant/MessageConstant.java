@@ -32,8 +32,31 @@ public class MessageConstant {
     public static final String VOUCHER_NOT_ON_SALE = "优惠券已下架或过期";
     public static final String SECKILL_NOT_STARTED = "秒杀尚未开始";
     public static final String STOCK_NOT_ENOUGH = "秒杀库存不足";
+    public static final String SECKILL_STOCK_NOT_PREHEATED = "秒杀库存未预热，请稍后重试";
     public static final String USER_NOT_EXIST = "用户不存在";
     public static final String VOUCHER_ALREADY_CLAIMED = "该优惠券每人限领一单，不能重复领取";
     public static final String VOUCHER_TIME_INVALID = "生效时间必须早于失效时间";
+
+    // ==================== 用户优惠券（下单抵扣） ====================
+    public static final String USER_VOUCHER_NOT_FOUND = "优惠券不存在，请重新选择";
+    public static final String USER_VOUCHER_ALREADY_USED = "该优惠券已被使用，请重新选择";
+
+    // ==================== 订单接单 / 指派 / 拒单 / 退款 ====================
+    public static final String ORDER_CANCEL_REASON_REQUIRED = "请填写取消原因";
+    public static final String ORDER_REJECT_REASON_REQUIRED = "请填写不接单原因";
+    public static final String ORDER_REFUND_REASON_REQUIRED = "请填写退款原因";
+    public static final String ORDER_NOT_ASSIGNABLE = "该订单当前不可指派家政员（需为待接单且尚未指派）";
+    public static final String ORDER_NOT_CANCELLABLE = "该订单当前不可取消（仅待接单、已接单、服务中可取消）";
+    public static final String ORDER_NOT_REFUNDABLE = "该订单当前不可退款（仅待退款可退款）";
+    public static final String ORDER_NOT_ACCEPTABLE = "该订单当前不可接单";
+    public static final String ORDER_NOT_ARRIVABLE = "该订单当前不可确认到达（仅已接单可确认）";
+    public static final String ORDER_CANNOT_SERVE_FAILED = "该订单当前无法上报（仅已接单、服务中可上报无法服务）";
+    public static final String ORDER_NOT_COMPLETABLE = "该订单当前不可完成（仅服务中可完成）";
+    public static final String ORDER_ESTIMATED_TIME_REQUIRED = "请填写预计到达时间";
+    public static final String ORDER_ESTIMATED_TIME_INVALID = "预计到达时间格式有误";
+    public static final String ORDER_REJECT_REASON_TOO_LONG = "原因不能超过255个字符";
+    public static final String HOUSEKEEPER_NOT_AVAILABLE = "该家政员在此服务时段已被占用，请重新选择";
+    public static final String HOUSEKEEPER_NOT_FOUND = "该账号未绑定家政员档案，请联系管理员";
+    public static final String ORDER_SCHEDULE_TIME_INVALID = "订单预约时段格式有误，无法完成该操作";
 
 }

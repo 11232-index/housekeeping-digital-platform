@@ -3,8 +3,10 @@ package com.smart.service.impl;
 import com.smart.constant.JwtClaimsConstant;
 import com.smart.dto.EmployeeLoginDTO;
 import com.smart.entity.Employee;
+import com.smart.entity.EmployeeDetail;
 import com.smart.entity.Housekeeper;
 import com.smart.exception.LoginFailedException;
+import com.smart.mapper.EmployeeDetailMapper;
 import com.smart.mapper.HousekeeperMapper;
 import com.smart.properties.JwtProperties;
 import com.smart.service.EmployeeAuthService;
@@ -36,6 +38,9 @@ public class WorkerAuthServiceImpl implements WorkerAuthService {
     private HousekeeperMapper housekeeperMapper;
 
     @Autowired
+    private EmployeeDetailMapper employeeDetailMapper;
+
+    @Autowired
     private JwtProperties jwtProperties;
 
     @Override
@@ -58,7 +63,10 @@ public class WorkerAuthServiceImpl implements WorkerAuthService {
         log.info("家政员身份确认：employeeId={}, housekeeperId={}, name={}", employee.getId(),
                 housekeeper == null ? null : housekeeper.getId(), name);
 
-        // 4. 签发员工令牌（与 /employee/auth/login 同款：claims 存 empId）
+        // 4. 关联 employee_detail 取岗位（该员工可能还没有详情记录）
+        EmployeeDetail detail = employeeDetailMapper.getByEmployeeId(employee.getId());
+
+        // 5. 签发员工令牌（与 /employee/auth/login 同款：claims 存 empId）
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
         String token = JwtUtil.createJWT(
@@ -71,6 +79,8 @@ public class WorkerAuthServiceImpl implements WorkerAuthService {
                 .housekeeperId(housekeeper == null ? null : housekeeper.getId())
                 .name(name)
                 .picture(picture)
+                .position(detail != null ? detail.getPosition() : null)
+                .phone(employee.getPhone())
                 .token(token)
                 .build();
     }

@@ -3,6 +3,9 @@ package com.smart.mapper;
 import com.smart.entity.SeckillVoucher;
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Mapper
 public interface SeckillVoucherMapper {
 
@@ -25,11 +28,13 @@ public interface SeckillVoucherMapper {
     void update(SeckillVoucher seckillVoucher);
 
     /**
-     * 乐观锁扣减库存：仅当库存大于0时扣减，防止超卖
-     * @return 受影响行数，0表示扣减失败（库存不足）
+     * 查出指定时间之后结束的秒杀券，供对账任务遍历。
+     * <p>
+     * 只取还在有效期内的（往前留一天余量，覆盖刚结束但可能还有在途请求的券），
+     * 避免全表扫描，也避免给早已结束的券重建 Redis 库存 key。
      */
-    @Update("update tb_seckill_voucher set stock = stock - 1 where voucher_id = #{voucherId} and stock > 0")
-    int deductStock(Long voucherId);
+    @Select("select * from tb_seckill_voucher where end_time > #{since}")
+    List<SeckillVoucher> listForReconcile(@Param("since") LocalDateTime since);
 
     /**
      * 删除秒杀券信息

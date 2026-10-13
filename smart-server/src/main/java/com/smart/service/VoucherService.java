@@ -3,6 +3,7 @@ package com.smart.service;
 import com.smart.dto.VoucherDTO;
 import com.smart.dto.VoucherPageQueryDTO;
 import com.smart.result.PageResult;
+import com.smart.vo.UserVoucherVO;
 import com.smart.vo.VoucherVO;
 
 import java.util.List;
@@ -71,5 +72,13 @@ public interface VoucherService {
      * @return 领取成功的优惠券信息
      */
     VoucherVO seckillVoucher(Long voucherId);
+
+    /**
+     * 查询某用户的全部优惠券（含已使用，按领取时间倒序）—— C端「我的优惠券」
+     *
+     * @param userId 用户id
+     * @return 用户的优惠券列表
+     */
+    List<UserVoucherVO> listMyVouchers(Long userId);
 
 }

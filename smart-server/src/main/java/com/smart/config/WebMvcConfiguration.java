@@ -46,10 +46,11 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/auth/login", "/admin/auth/securityQuestion", "/admin/auth/resetPassword", "/admin/common/download/**", "/admin/shop/getStatus", "/admin/category/list");
-        // 员工端拦截器
+        // 员工端拦截器（含家政员小程序端的 /worker/**，登录签发的同为员工令牌）
         registry.addInterceptor(jwtTokenEmployeeInterceptor)
-                .addPathPatterns("/employee/**")
-                .excludePathPatterns("/employee/auth/login", "/employee/service-item/page", "/employee/service-package/page");
+                .addPathPatterns("/employee/**", "/worker/**")
+                .excludePathPatterns("/employee/auth/login", "/employee/service-item/page", "/employee/service-package/page",
+                        "/worker/auth/login");
         // 用户端拦截器
         registry.addInterceptor(jwtTokenUserInterceptor)
                 .addPathPatterns("/user/**")

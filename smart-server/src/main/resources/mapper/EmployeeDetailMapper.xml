@@ -20,6 +20,9 @@
             <if test="workStatus != null">
                 work_status = #{workStatus},
             </if>
+            <if test="schedule != null">
+                schedule = #{schedule},
+            </if>
             <if test="contract != null">
                 contract = #{contract},
             </if>

@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -96,6 +99,23 @@ public class RedisConfiguration {
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(ttlMap)
                 .build();
+    }
+
+    /**
+     * 秒杀预扣库存脚本 Bean
+     * <p>
+     * 脚本内容在 {@code resources/lua/seckill.lua}，启动时从 classpath 读一次；
+     * 之后每次执行走 EVALSHA（只传 key 与参数，不重复传脚本体）。
+     * <p>
+     * 返回值为 Long：1=抢到 0=库存不足 -1=已领取过 -2=库存未预热
+     */
+    @Bean
+    public RedisScript<Long> seckillScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setLocation(new ClassPathResource("lua/seckill.lua"));
+        script.setResultType(Long.class);
+        log.info("=== 秒杀预扣库存脚本加载完成（lua/seckill.lua）===");
+        return script;
     }
 
     /**

@@ -10,6 +10,9 @@
             <if test="status != null">status = #{status},</if>
             <if test="addressBookId != null">address_book_id = #{addressBookId},</if>
             <if test="housekeeperScheduleId != null">housekeeper_schedule_id = #{housekeeperScheduleId},</if>
+            <if test="housekeeperId != null">housekeeper_id = #{housekeeperId},</if>
+            <if test="assignTime != null">assign_time = #{assignTime},</if>
+            <if test="remindTime != null">remind_time = #{remindTime},</if>
             <if test="scheduleDate != null">schedule_date = #{scheduleDate},</if>
             <if test="scheduleTime != null">schedule_time = #{scheduleTime},</if>
             <if test="serviceDuration != null">service_duration = #{serviceDuration},</if>
@@ -22,6 +25,7 @@
             <if test="address != null">address = #{address},</if>
             <if test="contactName != null">contact_name = #{contactName},</if>
             <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="refundReason != null">refund_reason = #{refundReason},</if>
             <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
             <if test="estimatedServiceTime != null">estimated_service_time = #{estimatedServiceTime},</if>
             <if test="actualServiceTime != null">actual_service_time = #{actualServiceTime},</if>
@@ -39,11 +43,31 @@
             <if test="status != null">
                 AND status = #{status}
             </if>
+            <!-- 订单类型过滤：orders 表无类型字段，按明细成员判断 -->
+            <!-- 服务订单：明细里有服务项目或服务套餐 -->
+            <if test='orderType == "service"'>
+                AND EXISTS (
+                    SELECT 1 FROM order_detail d
+                    WHERE d.order_id = orders.id
+                    AND (d.service_item_id IS NOT NULL OR d.service_package_id IS NOT NULL)
+                )
+            </if>
+            <!-- 家政员订单：明细里有家政员 -->
+            <if test='orderType == "housekeeper"'>
+                AND EXISTS (
+                    SELECT 1 FROM order_detail d
+                    WHERE d.order_id = orders.id
+                    AND d.housekeeper_id IS NOT NULL
+                )
+            </if>
             <if test="userId != null">
                 AND user_id = #{userId}
             </if>
             <if test="contactName != null and contactName != ''">
                 AND contact_name LIKE CONCAT('%', #{contactName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
             </if>
             <if test="beginTime != null and beginTime != ''">
                 AND order_time &gt;= #{beginTime}

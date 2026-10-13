@@ -11,16 +11,28 @@ import com.smart.dto.OrderPageQueryDTO;
 import com.smart.dto.OrderSubmitDTO;
 import com.smart.dto.ShoppingCartDTO;
 import com.smart.entity.AddressBook;
+import com.smart.entity.Housekeeper;
+import com.smart.entity.HousekeeperSchedule;
 import com.smart.entity.Order;
 import com.smart.entity.OrderDetail;
 import com.smart.entity.ShoppingCart;
+import com.smart.entity.UserVoucher;
+import com.smart.entity.Voucher;
 import com.smart.exception.ServiceOrderBusinessException;
+import com.smart.mapper.HousekeeperMapper;
 import com.smart.mapper.OrderDetailMapper;
 import com.smart.mapper.OrderMapper;
+import com.smart.mapper.UserVoucherMapper;
+import com.smart.mapper.VoucherMapper;
 import com.smart.service.AddressBookService;
+import com.smart.service.OrderNotifyService;
 import com.smart.service.OrderService;
+import com.smart.service.UserNotifyService;
 import com.smart.service.HousekeeperScheduleService;
 import com.smart.service.ShoppingCartService;
+import com.smart.utils.OrderStatusUtil;
+import com.smart.utils.ScheduleTimeUtil;
+import com.smart.vo.HousekeeperCandidateVO;
 import com.smart.vo.OrderSubmitVO;
 import com.smart.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +44,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -57,6 +73,10 @@ public class OrderServiceImpl implements OrderService {
     /** 订单号前缀 */
     private static final String ORDER_NO_PREFIX = "HS";
 
+    /** 员工端可取消的订单状态：待接单 / 已接单 / 服务中（中途出现突发情况时终止订单） */
+    private static final List<Integer> CANCELABLE_STATUSES = Arrays.asList(
+            Order.STATUS_PENDING_ACCEPT, Order.STATUS_ACCEPTED, Order.STATUS_IN_SERVICE);
+
     @Autowired
     private OrderMapper orderMapper;
 
@@ -71,6 +91,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private HousekeeperScheduleService housekeeperScheduleService;
+
+    @Autowired
+    private HousekeeperMapper housekeeperMapper;
+
+    @Autowired
+    private OrderNotifyService orderNotifyService;
+
+    @Autowired
+    private UserNotifyService userNotifyService;
+
+    @Autowired
+    private VoucherMapper voucherMapper;
+
+    @Autowired
+    private UserVoucherMapper userVoucherMapper;
 
     // ==================== 用户端接口 ====================
 
@@ -113,7 +148,6 @@ public class OrderServiceImpl implements OrderService {
                 .phone(addressBook.getPhone())
                 .address(addressBook.getDetail())
                 .contactName(addressBook.getConsignee())
-                .estimatedServiceTime(buildEstimatedTime(dto.getScheduleDate(), dto.getScheduleTime()))
                 .build();
 
         // 4. 从购物车构建明细并计算总金额
@@ -132,11 +166,15 @@ public class OrderServiceImpl implements OrderService {
             totalAmount = totalAmount.add(cartItem.getAmount());
             detailList.add(detail);
         }
-        order.setAmount(totalAmount);
+        // 4.5 用券：购物车这条路只会有服务项目/套餐，属于「服务预约」，允许用券
+        applyVoucher(userId, order, totalAmount, dto.getVoucherId());
 
         // 5. 保存订单（自增id回填到order.id）
         orderMapper.insert(order);
         log.info("订单创建成功：id={}, number={}, amount={}", order.getId(), order.getNumber(), order.getAmount());
+
+        // 5.5 用券的订单：把券置为已使用（状态CAS，并发下同一张券只会被用掉一次）
+        consumeVoucher(userId, order);
 
         // 6. 设置订单id并批量插入明细
         for (OrderDetail detail : detailList) {
@@ -181,11 +219,13 @@ public class OrderServiceImpl implements OrderService {
                 .payMethod(dto.getPayMethod())
                 .payStatus(Order.PAY_STATUS_UNPAID)
                 .amount(item.getAmount())
+                // 家政员预约：把「这单该谁接」冗余写到订单级字段，方便家政员端查「我的订单」。
+                // 订单类型的区分仍然只看 order_detail.housekeeper_id，不依赖这一列。
+                .housekeeperId(item.getHousekeeperId())
                 .remark(dto.getRemark())
                 .phone(dto.getPhone() != null ? dto.getPhone() : addressBook.getPhone())
                 .address(dto.getAddress() != null ? dto.getAddress() : addressBook.getDetail())
                 .contactName(dto.getContactName() != null ? dto.getContactName() : addressBook.getConsignee())
-                .estimatedServiceTime(buildEstimatedTime(dto.getScheduleDate(), dto.getScheduleTime()))
                 .build();
 
         // 2.5 家政员预约：乐观抢位（先占时段、再建单；抢不到直接失败，避免白生成订单号/脏单）
@@ -195,9 +235,16 @@ public class OrderServiceImpl implements OrderService {
             throw new ServiceOrderBusinessException(MessageConstant.HOUSEKEEPER_SCHEDULE_ALREADY_BOOKED);
         }
 
+        // 2.6 用券：只有「服务预约」能用 —— item 里带 housekeeperId 说明这是家政员预约，直接不用券
+        applyVoucher(userId, order, item.getAmount(),
+                item.getHousekeeperId() != null ? null : dto.getVoucherId());
+
         // 3. 保存订单
         orderMapper.insert(order);
         log.info("订单创建成功：id={}, number={}, amount={}", order.getId(), order.getNumber(), order.getAmount());
+
+        // 3.5 用券的订单：把券置为已使用（状态CAS，并发下同一张券只会被用掉一次）
+        consumeVoucher(userId, order);
 
         // 4. 插入单条明细
         OrderDetail detail = OrderDetail.builder()
@@ -290,18 +337,37 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
         }
+        // 归属校验：只允许操作自己的订单；他人的订单一律按“不存在”返回，避免泄露订单归属
+        if (userId == null || !userId.equals(order.getUserId())) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
         // 订单状态机校验：仅“待付款(1)/待接单(2)”允许用户取消
         if (!Order.STATUS_PENDING_PAYMENT.equals(order.getStatus())
                 && !Order.STATUS_PENDING_ACCEPT.equals(order.getStatus())) {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
         }
 
-        // 已支付 → 走“退款中”，订单未真正取消，其占用的家政员时段暂不释放
+        // 已支付 → 走“待退款(6)”，并立即释放占用的家政员时段
+        // 同样用带条件的 UPDATE（含 user_id / pay_status / status）收口：并发或重复申请只会成功一次，
+        // 也不存在改到他人订单的可能（虽然上面已校验归属，这里再兜一层，语义与未支付分支保持一致）
         if (Order.PAY_STATUS_PAID.equals(order.getPayStatus())) {
-            order.setStatus(Order.STATUS_REFUNDING);
-            order.setCancelReason(dto.getCancelReason());
-            orderMapper.update(order);
-            log.info("订单进入退款中：id={}, reason={}", dto.getOrderId(), dto.getCancelReason());
+            int rows = orderMapper.refundByStatusCas(
+                    dto.getOrderId(), userId, Order.PAY_STATUS_PAID,
+                    Order.STATUS_REFUNDING, dto.getCancelReason());
+            if (rows == 0) {
+                throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
+            }
+            // 用户主动取消：跟「家政员能不能做」无关，时段放回「可约」让别人还能约。
+            // 这是唯一会自动释放的订单终结方式（另一处是待付款超时取消），
+            // 拒单 / 员工取消 / 改派 / 退款 / 超时无人接 都刻意不释放 —— 见各自方法的注释。
+            if (order.getHousekeeperScheduleId() != null) {
+                housekeeperScheduleService.tryRelease(order.getHousekeeperScheduleId());
+            }
+            // 通知员工端：客户申请退款，需要及时处理
+            orderNotifyService.push("refund", "客户申请退款",
+                    "订单 " + order.getNumber() + " 客户申请退款：" + dto.getCancelReason() + "，请及时处理",
+                    order.getId(), order.getNumber(), order.getAmount());
+            log.info("订单进入待退款：id={}, reason={}", dto.getOrderId(), dto.getCancelReason());
             return;
         }
 
@@ -329,19 +395,28 @@ public class OrderServiceImpl implements OrderService {
     public void payOrder(Long orderId, Integer payMethod) {
         log.info("用户支付订单：id={}, payMethod={}", orderId, payMethod);
 
+        Long userId = BaseContext.getCurrentId();
+
         Order order = orderMapper.getById(orderId);
         if (order == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
+        // 归属校验：只允许支付自己的订单；他人的订单一律按“不存在”返回，避免泄露订单归属
+        if (userId == null || !userId.equals(order.getUserId())) {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
         }
         if (!order.getStatus().equals(Order.STATUS_PENDING_PAYMENT)) {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
         }
 
-        order.setStatus(Order.STATUS_PENDING_ACCEPT);
-        order.setPayStatus(Order.PAY_STATUS_PAID);
-        order.setPayMethod(payMethod);
-        order.setPayTime(LocalDateTime.now());
-        orderMapper.update(order);
+        // 带条件更新（CAS）：仅当订单仍属于该用户且仍是“待付款(1)”时才置为“待接单 + 已支付”，
+        // 并发/重复付款会因状态已不在 (1) 而影响 0 行被拒，不会重复置位
+        int rows = orderMapper.payByStatusCas(
+                orderId, userId, Order.STATUS_PENDING_PAYMENT,
+                Order.STATUS_PENDING_ACCEPT, Order.PAY_STATUS_PAID, payMethod);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
+        }
         log.info("订单支付成功：id={}", orderId);
     }
 
@@ -359,33 +434,49 @@ public class OrderServiceImpl implements OrderService {
         params.put("number", dto.getNumber());
         params.put("userId", dto.getUserId());
         params.put("contactName", dto.getContactName());
+        params.put("phone", dto.getPhone());
         params.put("beginTime", dto.getBeginTime());
         params.put("endTime", dto.getEndTime());
+        // 订单类型过滤：service=服务订单，housekeeper=家政员订单，null=全部
+        params.put("orderType", dto.getOrderType());
 
         return doPageQuery(dto, params);
     }
 
     /**
-     * 管理端更新订单状态（接单/开始服务/完成）
+     * 管理端推进订单状态（白名单：已接单(3)→服务中(4)、服务中(4)→已完成(5)）
+     * <p>
+     * 刻意不接受调用方任意指定 status：
+     * 「待接单→已接单」要走指派接口（需要占用家政员时段），
+     * 「转入待退款/已取消」也必须带原因，各有独立入口。
+     * 若放开任意传值，就能绕过「必须填写原因」的需求，也能把订单直接置成终态。
      */
     @Override
     @Transactional
     @CacheEvict(value = "order", key = "'one:' + #orderId")
     public void updateOrderStatus(Long orderId, Integer status) {
-        log.info("管理端更新订单状态：orderId={}, targetStatus={}", orderId, status);
-
-        Order order = orderMapper.getById(orderId);
-        if (order == null) {
-            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        log.info("管理端推进订单状态：orderId={}, targetStatus={}", orderId, status);
+        if (status == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
         }
 
-        order.setStatus(status);
-        // 开始服务时记录实际上门时间
-        if (status.equals(Order.STATUS_IN_SERVICE)) {
-            order.setActualServiceTime(LocalDateTime.now());
+        // 白名单：目标状态 → 允许的来源状态
+        Integer from;
+        if (Order.STATUS_IN_SERVICE.equals(status)) {
+            from = Order.STATUS_ACCEPTED;          // 3 → 4 开始服务
+        } else if (Order.STATUS_COMPLETED.equals(status)) {
+            from = Order.STATUS_IN_SERVICE;        // 4 → 5 完成
+        } else {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
         }
-        orderMapper.update(order);
-        log.info("订单状态更新成功：orderId={}, newStatus={}", orderId, status);
+
+        // 状态CAS：并发/重复点击/状态已变化时影响 0 行被拒；
+        // 进入「服务中」时由 SQL 顺带记录实际上门时间
+        int rows = orderMapper.statusCasWithActualTime(orderId, from, status);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(stateChangedMessage(orderId));
+        }
+        log.info("订单状态推进成功：orderId={}, {}→{}", orderId, from, status);
     }
 
     /**
@@ -402,9 +493,276 @@ public class OrderServiceImpl implements OrderService {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
         }
 
-        order.setEstimatedServiceTime(dto.getEstimatedServiceTime());
-        orderMapper.update(order);
+        // 定向更新单个字段：原来的「读出整行 → 改一个字段 → 整体 update」会把读到的
+        // pay_status / cancel_reason 等原样写回，并发下覆盖掉其它流程刚写入的值
+        orderMapper.updateEstimatedTime(orderId, dto.getEstimatedServiceTime());
         log.info("预计上门时间设置成功：orderId={}, estimatedServiceTime={}", orderId, dto.getEstimatedServiceTime());
+    }
+
+    // ==================== 指派 / 取消 / 退款 ====================
+
+    /**
+     * 员工端查询可指派的家政员候选（该订单服务时段内没有已占用排期的家政员）
+     */
+    @Override
+    public List<HousekeeperCandidateVO> listAssignCandidates(Long orderId) {
+        Order order = orderMapper.getById(orderId);
+        if (order == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
+        if (!Order.STATUS_PENDING_ACCEPT.equals(order.getStatus())) {
+            throw new ServiceOrderBusinessException(OrderStatusUtil.alreadyMessage(order.getStatus()));
+        }
+        LocalTime[] range = requireScheduleRange(order);
+
+        // 1) 先排除「家政员预约表里已有重叠时段」的人 —— 那些时段已经被用户约走了。
+        //    忽略订单自己关联的那条：拒单时已把它释放回「可约」，不忽略的话刚拒单的家政员
+        //    会被自己这条记录挡住，出现「他没在忙却派不了他」的死结。
+        List<HousekeeperCandidateVO> candidates = housekeeperMapper.listCandidates(
+                order.getScheduleDate(), range[0], range[1], order.getHousekeeperScheduleId());
+
+        // 2) 再排除「当天已经有别的未完成订单、且时段重叠」的人。
+        //    服务订单不进预约表（那张表是家政员预约专用的），所以占用情况只能从订单本身看。
+        List<Order> sameDayOrders = orderMapper.listActiveOrdersOnDate(order.getScheduleDate());
+        Set<Long> busyHousekeeperIds = new HashSet<>();
+        for (Order other : sameDayOrders) {
+            if (other.getHousekeeperId() == null || other.getId().equals(orderId)) {
+                continue;
+            }
+            if (overlaps(other.getScheduleTime(), range)) {
+                busyHousekeeperIds.add(other.getHousekeeperId());
+            }
+        }
+        if (busyHousekeeperIds.isEmpty()) {
+            return candidates;
+        }
+        return candidates.stream()
+                .filter(c -> !busyHousekeeperIds.contains(c.getHousekeeperId()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 判断某订单的时段文本是否与目标时段重叠。
+     * 解析失败按「不重叠」处理 —— 宁可漏挡一个，也不要因为一条脏数据把所有人都排除掉。
+     */
+    private boolean overlaps(String timeRange, LocalTime[] target) {
+        LocalTime[] range = ScheduleTimeUtil.parseRange(timeRange);
+        if (range == null) {
+            return false;
+        }
+        return range[0].isBefore(target[1]) && range[1].isAfter(target[0]);
+    }
+
+    /**
+     * 员工端指派家政员：写入订单级家政员与指派时刻，并占用该家政员此时段。
+     * 订单状态不变，仍停在「待接单(2)」等家政员确认。
+     * <p>
+     * 执行顺序不能反：先 CAS 抢订单、再占时段。反过来的话，并发中失败的一方
+     * 会在排期表里留下一条永远释放不掉的孤儿占用。
+     */
+    @Override
+    @Transactional
+    @CacheEvict(value = "order", key = "'one:' + #orderId")
+    public void assignOrder(Long orderId, Long housekeeperId) {
+        log.info("员工端指派家政员：orderId={}, housekeeperId={}", orderId, housekeeperId);
+        if (housekeeperId == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.HOUSEKEEPER_NOT_FOUND);
+        }
+
+        Order order = orderMapper.getById(orderId);
+        if (order == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
+        // 时段必须能解析，否则既没法筛候选、也没法判断冲突
+        requireScheduleRange(order);
+
+        // 1) CAS 抢订单：仅当仍是待接单且尚未指派时成功，并发双指派只有一个能过
+        int rows = orderMapper.assignCas(orderId, housekeeperId, Order.STATUS_PENDING_ACCEPT);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(stateChangedMessage(orderId));
+        }
+
+        // 2) 处理订单原有的预约时段（只有家政员订单会有；服务订单这里是 null）。
+        //    派回原来那位 → 时段原封不动继续占着（拒单时就没释放，正好接着用）；
+        //    换人了     → 只把订单上的关联清掉，原时段【保持不可约】不释放
+        //                （家政员拒单 = 他那个时间做不了，放回去别的用户又会约到）。
+        //    新指派产生的占用不写 housekeeper_schedule（那是家政员预约专用的表），
+        //    由订单表记录、候选查询时判断，见 listAssignCandidates。
+        if (order.getHousekeeperScheduleId() != null) {
+            HousekeeperSchedule schedule = housekeeperScheduleService.getById(order.getHousekeeperScheduleId());
+            if (schedule == null || !housekeeperId.equals(schedule.getHousekeeperId())) {
+                orderMapper.clearScheduleId(orderId);
+            }
+        }
+
+        // 3) 取家政员姓名（明细更新和通知都要用）
+        Housekeeper housekeeper = housekeeperMapper.getById(housekeeperId);
+        String hkName = housekeeper != null ? housekeeper.getName() : "家政员";
+
+        // 4) 家政员订单被拒后换人：同步明细上的家政员姓名与id，避免详情里“家政员”和“服务明细”对不上。
+        //    服务订单的明细 housekeeper_id 为空，这条 SQL 影响 0 行，不会误伤服务名。
+        orderDetailMapper.updateHousekeeperInfo(orderId, housekeeperId, hkName);
+
+        // 5) 通知员工端消息中心（同时走 WebSocket 广播）
+        orderNotifyService.push("assign", "订单已指派",
+                "订单 " + order.getNumber() + " 已指派给 " + hkName + "，等待其确认接单",
+                orderId, order.getNumber(), order.getAmount());
+        log.info("指派完成：orderId={}, housekeeperId={}", orderId, housekeeperId);
+    }
+
+    /**
+     * 员工端取消待接单订单：置为待退款并记录取消原因，同时释放已占用时段
+     */
+    @Override
+    @Transactional
+    @CacheEvict(value = "order", key = "'one:' + #orderId")
+    public void staffCancelOrder(Long orderId, String cancelReason) {
+        log.info("员工端取消订单：orderId={}, reason={}", orderId, cancelReason);
+        String reason = requireReason(cancelReason, MessageConstant.ORDER_CANCEL_REASON_REQUIRED);
+
+        Order order = orderMapper.getById(orderId);
+        if (order == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
+
+        int rows = orderMapper.staffCancelToRefundCas(
+                orderId, CANCELABLE_STATUSES, Order.STATUS_REFUNDING, reason);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(stateChangedMessage(orderId));
+        }
+
+        // 刻意【不释放】预约时段：这类取消多半就是因为「家政员那个时间做不了」，
+        // 放回「可约」只会让别的用户再约到同一个没人能做的时段。
+        // 想重新开放的话去预约管理页手动改回「可约」。
+        // 通知下单用户：订单被取消，涉及退款，必须让用户知道
+        userNotifyService.push(order.getUserId(), "cancelled", "订单已取消",
+                "您的订单 " + order.getNumber() + " 已取消（" + reason + "），退款将尽快处理",
+                orderId, order.getNumber());
+        log.info("员工端取消成功，订单转入待退款：orderId={}", orderId);
+    }
+
+    /**
+     * 员工端确认退款：待退款(6) → 已取消(7)，记录退款原因，支付状态置为「退款」
+     */
+    @Override
+    @Transactional
+    @CacheEvict(value = "order", key = "'one:' + #orderId")
+    public void completeRefund(Long orderId, String refundReason) {
+        log.info("员工端确认退款：orderId={}, reason={}", orderId, refundReason);
+        String reason = requireReason(refundReason, MessageConstant.ORDER_REFUND_REASON_REQUIRED);
+
+        Order order = orderMapper.getById(orderId);
+        if (order == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_NOT_FOUND);
+        }
+
+        int rows = orderMapper.completeRefundCas(
+                orderId, Order.STATUS_REFUNDING, Order.STATUS_CANCELLED,
+                Order.PAY_STATUS_REFUND, reason);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(stateChangedMessage(orderId));
+        }
+
+        // 同样不释放时段：这单是因为做不了/没人接才退的款，时段保持不可约
+        // 通知下单用户：退款处理完了，钱的事必须让用户知道
+        userNotifyService.push(order.getUserId(), "refunded", "退款已完成",
+                "您的订单 " + order.getNumber() + " 的退款已处理完成",
+                orderId, order.getNumber());
+        log.info("退款完成，订单已取消：orderId={}", orderId);
+    }
+
+    /**
+     * 解析订单的预约时段，解析不出来直接拒绝操作。
+     * 绝不能让 start/end 以 null 进入候选 SQL —— 那样 s.start_time &lt; NULL 恒为 false，
+     * 「所有家政员」都会变成候选。
+     */
+    private LocalTime[] requireScheduleRange(Order order) {
+        LocalTime[] range = ScheduleTimeUtil.parseRange(order.getScheduleTime());
+        if (order.getScheduleDate() == null || range == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.ORDER_SCHEDULE_TIME_INVALID);
+        }
+        return range;
+    }
+
+    /**
+     * 状态校验失败时给用户的统一提示。
+     * 重新查一次订单拿当前状态 —— CAS 失败恰恰说明它已经不是我们刚读到的那个状态了，
+     * 拿旧值拼提示会误导用户。
+     */
+    private String stateChangedMessage(Long orderId) {
+        Order latest = orderMapper.getById(orderId);
+        return OrderStatusUtil.alreadyMessage(latest == null ? null : latest.getStatus());
+    }
+
+    /**
+     * 下单用券：校验 → 算折扣 → 把券快照和折后金额写进订单（此时订单还没落库）。
+     * <p>
+     * voucherId 为 null 时按「不用券」处理，金额原样写入。
+     * <b>家政员预约不允许用券</b> —— 由调用方直接传 null 进来，见 submitSingleOrder。
+     *
+     * @param originalAmount 用券前的原价
+     */
+    private void applyVoucher(Long userId, Order order, BigDecimal originalAmount, Long voucherId) {
+        if (voucherId == null) {
+            order.setAmount(originalAmount);
+            return;
+        }
+        // 1) 这张券得确实属于该用户
+        UserVoucher userVoucher = userVoucherMapper.getByUserAndVoucher(userId, voucherId);
+        if (userVoucher == null) {
+            throw new ServiceOrderBusinessException(MessageConstant.USER_VOUCHER_NOT_FOUND);
+        }
+        if (!UserVoucher.STATUS_UNUSED.equals(userVoucher.getStatus())) {
+            throw new ServiceOrderBusinessException(MessageConstant.USER_VOUCHER_ALREADY_USED);
+        }
+        // 2) 券本身还得是在上架状态
+        Voucher voucher = voucherMapper.getById(voucherId);
+        if (voucher == null || !Voucher.STATUS_ON_SALE.equals(voucher.getStatus())) {
+            throw new ServiceOrderBusinessException(MessageConstant.VOUCHER_NOT_ON_SALE);
+        }
+        // 3) 算折扣：实付 = 原价 × 折扣率 / 100（actual_value = 80 表示八折）
+        BigDecimal finalAmount = originalAmount
+                .multiply(BigDecimal.valueOf(voucher.getActualValue()))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        // 4) 券信息作为快照写进订单，订单详情直接展示、不用再回查券表
+        order.setAmount(finalAmount);
+        order.setVoucherId(voucher.getId());
+        order.setVoucherTitle(voucher.getTitle());
+        order.setVoucherDiscount(voucher.getActualValue());
+        order.setDiscountAmount(originalAmount.subtract(finalAmount));
+    }
+
+    /**
+     * 订单落库后把券置为「已使用」。
+     * <p>
+     * 用状态CAS（只有「未使用」才能改成「已使用」）：同一张券被两个订单并发使用时只会成功一次，
+     * 失败说明券刚被别的订单用掉 —— 抛异常让整个下单事务回滚，不会出现"券被用两次"或"下了单但券没扣"。
+     */
+    private void consumeVoucher(Long userId, Order order) {
+        if (order.getVoucherId() == null) {
+            return;
+        }
+        int rows = userVoucherMapper.markUsed(userId, order.getVoucherId(), order.getId(),
+                UserVoucher.STATUS_UNUSED, UserVoucher.STATUS_USED);
+        if (rows == 0) {
+            throw new ServiceOrderBusinessException(MessageConstant.USER_VOUCHER_ALREADY_USED);
+        }
+        log.info("订单用券成功：orderId={}, voucherId={}, 优惠{}元",
+                order.getId(), order.getVoucherId(), order.getDiscountAmount());
+    }
+
+    /**
+     * 校验必填原因并做长度保护（对应列 varchar(255)）
+     */
+    private String requireReason(String reason, String emptyMessage) {
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new ServiceOrderBusinessException(emptyMessage);
+        }
+        String trimmed = reason.trim();
+        if (trimmed.length() > 255) {
+            throw new ServiceOrderBusinessException(MessageConstant.ORDER_REJECT_REASON_TOO_LONG);
+        }
+        return trimmed;
     }
 
     // ==================== 工具方法 ====================
@@ -412,24 +770,6 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 生成订单号：HS + yyyyMMddHHmmss + 4位随机数
      */
-    /**
-     * 根据预约日期+时段计算预计上门时间（取时段开始时间）
-     * 如 scheduleDate=2024-08-05, scheduleTime=8:00~9:00 → 2024-08-05 08:00:00
-     */
-    private LocalDateTime buildEstimatedTime(String scheduleDate, String scheduleTime) {
-        if (scheduleDate == null || scheduleTime == null) return null;
-        try {
-            String startTime = scheduleTime.split("~")[0].trim(); // "8:00"
-            return LocalDateTime.of(
-                    LocalDate.parse(scheduleDate),
-                    LocalTime.parse(startTime)
-            );
-        } catch (Exception e) {
-            log.warn("解析预计上门时间失败：date={}, time={}", scheduleDate, scheduleTime);
-            return null;
-        }
-    }
-
     @Override
     public String generateOrderNumber() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -463,6 +803,13 @@ public class OrderServiceImpl implements OrderService {
         BeanUtils.copyProperties(order, vo);
         List<OrderDetail> detailList = orderDetailMapper.listByOrderId(order.getId());
         vo.setOrderDetailList(detailList);
+        // 填充家政员姓名，供员工端展示「已指派（张三）」
+        if (order.getHousekeeperId() != null) {
+            Housekeeper housekeeper = housekeeperMapper.getById(order.getHousekeeperId());
+            if (housekeeper != null) {
+                vo.setHousekeeperName(housekeeper.getName());
+            }
+        }
         return vo;
     }
 }
