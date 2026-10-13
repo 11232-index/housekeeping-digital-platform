@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `employee_detail` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `employee_id` bigint NOT NULL COMMENT '家政人员ID',
@@ -6,6 +7,7 @@ CREATE TABLE `employee_detail` (
   `position` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '岗位',
   `salary` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '工资',
   `work_status` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '工作状态',
+  `schedule` text CHARACTER SET utf8mb3 COLLATE utf8mb3_bin COMMENT '排班（JSON：星期 -> 该天时段列表）',
   `contract` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '合同文件路径',
   `health_certificate` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '健康证文件路径',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',

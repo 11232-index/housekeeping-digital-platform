@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `chat_session` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `admin_id` bigint NOT NULL COMMENT '管理员ID',

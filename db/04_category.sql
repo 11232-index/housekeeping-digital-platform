@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `category` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `type` int DEFAULT NULL COMMENT '类型   1 服务分类 2 服务套餐分类',

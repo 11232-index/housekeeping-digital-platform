@@ -1,10 +1,14 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `orders` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '订单号',
-  `status` int DEFAULT NULL COMMENT '订单状态 1待付款 2待接单 3已接单 4服务中 5已完成 6退款中 7已取消',
+  `status` int DEFAULT NULL COMMENT '订单状态 1待付款 2待接单 3已接单 4服务中 5已完成 6待退款 7已取消',
   `user_id` bigint DEFAULT NULL COMMENT '用户id',
   `address_book_id` bigint DEFAULT NULL COMMENT '地址id',
   `housekeeper_schedule_id` bigint DEFAULT NULL COMMENT '关联housekeeper_schedule表id',
+  `housekeeper_id` bigint DEFAULT NULL COMMENT '该订单由哪位家政员接单（用户指定或员工指派）',
+  `assign_time` datetime DEFAULT NULL COMMENT '员工指派时刻（一级提醒计时起点）',
+  `remind_time` datetime DEFAULT NULL COMMENT '一级提醒已推送时刻（幂等标记，防重复推送）',
   `schedule_date` date DEFAULT NULL COMMENT '预约日期',
   `schedule_time` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '预约时段（如：09:00~11:00）',
   `service_duration` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '服务时长（如：2小时、半天、全天）',
@@ -13,11 +17,16 @@ CREATE TABLE `orders` (
   `pay_method` int DEFAULT NULL COMMENT '支付方式 1微信支付 2支付宝支付',
   `pay_status` tinyint DEFAULT '0' COMMENT '支付状态 0未支付 1已支付 2退款',
   `amount` decimal(10,2) DEFAULT NULL COMMENT '订单金额',
+  `voucher_id` bigint DEFAULT NULL COMMENT '使用的优惠券id（未使用券为NULL）',
+  `voucher_title` varchar(255) DEFAULT NULL COMMENT '优惠券标题（快照，便于订单直接展示）',
+  `voucher_discount` int DEFAULT NULL COMMENT '折扣率快照（80=八折）',
+  `discount_amount` decimal(10,2) DEFAULT NULL COMMENT '优惠金额（原价 - 实付）',
   `remark` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注信息',
   `phone` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机号（冗余）',
   `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '详细地址（冗余）',
   `contact_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系人',
   `cancel_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '取消原因',
+  `refund_reason` varchar(255) DEFAULT NULL COMMENT '退款原因（员工端退款到已取消时填写）',
   `cancel_time` datetime DEFAULT NULL COMMENT '取消时间',
   `estimated_service_time` datetime DEFAULT NULL COMMENT '预计上门时间',
   `actual_service_time` datetime DEFAULT NULL COMMENT '实际上门时间',
@@ -25,5 +34,7 @@ CREATE TABLE `orders` (
   UNIQUE KEY `uk_number` (`number`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_status` (`status`),
-  KEY `idx_order_time` (`order_time`)
+  KEY `idx_order_time` (`order_time`),
+  KEY `idx_order_housekeeper` (`housekeeper_id`),
+  KEY `idx_status_schedule` (`status`, `schedule_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';

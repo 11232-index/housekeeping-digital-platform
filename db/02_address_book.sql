@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `address_book` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` bigint DEFAULT NULL COMMENT '用户id',

@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `updates` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `title` varchar(100) NOT NULL COMMENT '动态标题',

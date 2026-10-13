@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `housekeeper` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `employee_id` bigint NOT NULL COMMENT '关联员工表id',

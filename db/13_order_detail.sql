@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `order_detail` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `order_id` bigint NOT NULL COMMENT '订单id',

@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `feed` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `updates_id` bigint DEFAULT NULL COMMENT '关联updates表id',

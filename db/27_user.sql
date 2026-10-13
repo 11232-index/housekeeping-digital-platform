@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `openid` varchar(45) NOT NULL COMMENT '微信用户的唯一标识',

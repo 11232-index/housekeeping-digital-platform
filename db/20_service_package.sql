@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `service_package` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `name` varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '服务套餐名称',

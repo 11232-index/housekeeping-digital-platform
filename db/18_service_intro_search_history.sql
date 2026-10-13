@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `service_intro_search_history` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `user_id` bigint NOT NULL COMMENT '用户id',

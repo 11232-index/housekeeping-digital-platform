@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `service_package_requirement` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `service_package_id` bigint NOT NULL COMMENT '服务套餐id',

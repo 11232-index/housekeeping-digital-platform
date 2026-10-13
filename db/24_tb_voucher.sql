@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `tb_voucher` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
   `order_id` bigint DEFAULT NULL COMMENT '使用该优惠券的订单id（关联 orders 表），支付时使用券后回填',

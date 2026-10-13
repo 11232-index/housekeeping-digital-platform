@@ -1,3 +1,4 @@
+USE `smart_housekeeping_system`;
 CREATE TABLE `service_cart` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '服务名称',
