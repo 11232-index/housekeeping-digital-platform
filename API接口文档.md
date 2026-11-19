@@ -1,6 +1,6 @@
-# smart-housekeeping-system 后端接口文档
+# housekeeping-digital-platform 后端接口文档
 
-> 项目：smart-housekeeping-system（智能家政服务）  
+> 项目：housekeeping-digital-platform（家政服务数字化平台）  
 > 文档生成日期：2026-07-24  
 > 最后更新：2026-10-29（补充管理端工作台统计、员工端工作台、消息通知、家政员端、C端内容查询等缺失接口，按代码实际路由校正并重新统计）
 

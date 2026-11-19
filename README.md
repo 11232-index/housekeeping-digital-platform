@@ -50,7 +50,7 @@ Web 管理端（Vue）        用户小程序        家政员小程序
 ## 项目结构
 
 ```
-smart-housekeeping-system/
+housekeeping-digital-platform/
 ├── smart-common/                  # 公共模块
 │   ├── constant/                  # 状态码、消息、JWT、订单事件常量
 │   ├── exception/                 # 业务异常
