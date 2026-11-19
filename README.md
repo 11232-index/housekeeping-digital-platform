@@ -1,4 +1,4 @@
-<h1 align="center">智能家政平台</h1>
+<h1 align="center">家政服务数字化平台</h1>
 
 <p align="center">
   <a href="https://spring.io/projects/spring-boot"><img src="https://img.shields.io/badge/Spring%20Boot-2.7.3-6DB33F.svg" alt="Spring Boot 2.7.3"></a>
