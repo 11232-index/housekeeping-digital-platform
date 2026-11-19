@@ -14,8 +14,6 @@ application-dev.yml
 db/backup/
 # 说明/排查 txt 文档
 *.txt
-# 接口文档
-/API接口文档.md
 
 # 前端依赖/构建产物/本地文件
 **/node_modules/
