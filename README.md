@@ -1,4 +1,4 @@
-<h1 align="center">智能家政后端服务</h1>
+<h1 align="center">智能家政平台</h1>
 
 <p align="center">
   <a href="https://spring.io/projects/spring-boot"><img src="https://img.shields.io/badge/Spring%20Boot-2.7.3-6DB33F.svg" alt="Spring Boot 2.7.3"></a>
@@ -6,20 +6,22 @@
   <a href="https://www.mysql.com/"><img src="https://img.shields.io/badge/MySQL-8-4479A1.svg" alt="MySQL 8"></a>
   <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-7-DC382D.svg" alt="Redis"></a>
   <a href="https://www.rabbitmq.com/"><img src="https://img.shields.io/badge/RabbitMQ-4.x-FF6600.svg" alt="RabbitMQ"></a>
+  <a href="https://vuejs.org/"><img src="https://img.shields.io/badge/Vue-3.5-42B883.svg" alt="Vue 3"></a>
+  <a href="https://developers.weixin.qq.com/miniprogram/dev/framework/"><img src="https://img.shields.io/badge/WeChat-MiniProgram-07C160.svg" alt="WeChat Mini Program"></a>
 </p>
 
-<p align="center"><em>Spring Boot 多模块 · 三端登录鉴权 · 订单状态机 · RabbitMQ 异步通知 · WebSocket 实时提醒</em></p>
+<p align="center"><em>Spring Boot 后端 · Web 管理端 · 用户/家政员小程序 · RabbitMQ 异步通知 · WebSocket 实时提醒</em></p>
 
 ## 项目概述
 
-智能家政平台的后端服务，基于 Spring Boot 2.7.3 + MyBatis 构建，面向四类用户：
+本仓库包含智能家政平台的**后端、Web 管理端和微信小程序**，基于 Spring Boot 2.7.3 + MyBatis 构建，面向四类用户：
 
 - **管理端（admin）**：管理员、员工、分类、服务、套餐、优惠券、内容、统计
 - **员工端（employee）**：服务管理、家政员档期、订单指派/接单/退款、工作台
 - **家政员端（worker）**：小程序登录、我的订单、接单/到达/完成/拒单、个人资料
 - **用户端（user）**：微信登录、服务浏览、购物车、下单、支付、优惠券、订单、地址、消息
 
-后端同时承担 Web 管理端和两个小程序的 HTTP 接口，并通过 RabbitMQ + WebSocket 完成订单事件的异步通知。
+后端承担 Web 管理端和两个小程序的 HTTP 接口，并通过 RabbitMQ + WebSocket 完成订单事件的异步通知。
 
 ## 系统架构
 
@@ -88,8 +90,24 @@ smart-housekeeping-system/
 │   ├── migrate/                   # 老库增量升级脚本（新库不要执行）
 │   └── backup/                    # 本机数据快照（不入库）
 │
-├── miniapp/                       # 用户小程序源码
-├── web-admin/                     # Web 管理端源码（Vue 3 + Vite）
+├── miniapp/                       # 微信小程序（用户端 + 家政员端，原生开发）
+│   ├── pages/                     # 31 个页面
+│   ├── components/                # 自定义导航栏、TabBar
+│   ├── utils/                     # request.js、util.js
+│   ├── app.js                     # 全局配置（8080 / 5000 地址）
+│   ├── app.json
+│   └── app.wxss
+│
+├── web-admin/                     # Web 管理端（Vue 3 + Vite + TS）
+│   ├── src/
+│   │   ├── api/                   # 接口封装（19 个模块）
+│   │   ├── views/                 # 登录、员工、服务、订单、统计等页面
+│   │   ├── router/                # 路由
+│   │   ├── utils/                 # request、WebSocket 提醒
+│   │   └── main.ts
+│   ├── vite.config.ts
+│   └── package.json
+│
 ├── upload/                        # 本地上传目录映射
 ├── API接口文档.md                  # 166 个 HTTP 接口说明
 ├── pom.xml
@@ -198,7 +216,9 @@ smart-housekeeping-system/
 | 认证 | JWT（jjwt）、BCrypt |
 | 文件 | 阿里云 OSS |
 | 报表 | Apache POI（依赖已引入） |
-| 构建 | Maven 多模块 |
+| Web 前端 | Vue 3.5、Vite 8、TypeScript、Element Plus、Vue Router、Axios |
+| 小程序 | 微信小程序原生（WXML / WXSS / JS） |
+| 构建 | Maven 多模块、npm / Vite |
 
 ## 快速开始
 
@@ -255,8 +275,8 @@ mvn -pl smart-server -am spring-boot:run
 启动后：
 
 - 后端接口：`http://localhost:8080`
-- Web 管理端：`D:\SmartOrderingSystem`，`npm run dev`
-- 用户小程序：`D:\weixin-code`
+- Web 管理端：`web-admin/`，`npm run dev`
+- 微信小程序：`miniapp/`，用微信开发者工具导入
 - RabbitMQ 管理页：`http://localhost:15672`
 
 ### 5. RabbitMQ 说明
@@ -268,6 +288,78 @@ mvn -pl smart-server -am spring-boot:run
 - 延迟队列：`order.delay.15m.queue`、`order.delay.5m.queue`、`order.delay.process.queue`
 
 RabbitMQ 未启动时应用仍可启动，但订单通知不会生成，延迟动作由 `OrderTask` 兜底。
+
+## 前端项目
+
+仓库同时包含 Web 管理端和微信小程序源码，均直接对接后端 8080。
+
+### 1. Web 管理端 `web-admin/`
+
+**技术栈**：Vue 3.5、Vite 8、TypeScript、Element Plus、Vue Router、Axios
+
+**页面功能**：
+
+| 分组 | 页面 |
+|---|---|
+| 登录与首页 | 登录、首页、数据看板（Dashboard） |
+| 员工 | 员工管理、员工详情、员工工作台 |
+| 家政员 | 家政员管理、档期管理 |
+| 服务 | 分类管理、服务项目、服务套餐 |
+| 交易 | 订单管理、优惠券管理 |
+| 内容 | 动态、关于我们、服务介绍、服务推荐 |
+| AI | 聊天助手 |
+| 实时提醒 | WebSocket 来单/催单提醒、消息中心未读角标、语音播报 |
+
+**启动**：
+
+```bash
+cd web-admin
+npm install
+npm run dev
+```
+
+- 默认访问：`http://localhost:5173`（端口被占用时 Vite 会自动顺延）
+- 接口地址：`src/utils/request.ts` 中 `baseURL = http://localhost:8080`
+- 生产构建：`npm run build`，产物在 `web-admin/dist/`
+
+### 2. 微信小程序 `miniapp/`
+
+**技术栈**：微信小程序原生（WXML / WXSS / JS），共 31 个页面。
+
+**用户端**（底部 Tab：首页、家政预约、预约清单、我的）：
+
+- 首页、服务介绍、服务详情、家政预约、家政员详情
+- 预约清单、订单确认、支付、支付成功、历史订单、预约记录
+- 地址管理、优惠券、消息通知、个人中心
+- **智能客服** `customer-service`：对接 AI 服务 5000
+- **智能搜索** `smart-search`：对接 AI 搜索服务 5001
+
+**家政员端**：
+
+- 登录、工作台、我的订单、订单详情、拒单、个人资料
+
+**运行步骤**：
+
+1. 微信开发者工具 → 导入项目，选择 `miniapp/`
+2. 填写 AppID（仓库中为 `wxebf57cb83d999649`，可替换为自己的）
+3. 详情 → 本地设置 → 勾选「不校验合法域名」
+4. 地址配置：
+   - `utils/request.js` 的 `BASE_URL`（业务接口 8080）：
+     - 开发者工具：改成 `http://localhost:8080`
+     - 真机：`http://192.168.137.1:8080`（电脑热点地址，仓库默认值）
+   - `app.js` 的 `aiBaseUrl`（AI 客服 5000）：
+     - 开发者工具：`http://127.0.0.1:5000`
+     - 真机：`http://192.168.137.1:5000`（电脑热点地址）
+   - 智能搜索页会自动从 `aiBaseUrl` 推导 5001，不需要单独写死
+5. 真机调试：手机连接电脑热点，Windows 防火墙放行 8080、5000、5001
+
+### 3. 联调顺序
+
+1. 启动 MySQL、Redis、RabbitMQ
+2. 启动后端 `SmartApplication`（8080）
+3. 启动 Web 管理端或小程序
+4. 测试订单通知：确认 `order.notify.queue` 有 1 个消费者
+5. 测试智能搜索：额外启动 AI 服务 5001 和 Qdrant
 
 ## API 概览
 
