@@ -8,6 +8,12 @@ App({
     this.globalData.statusBarHeight = systemInfo.statusBarHeight;
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
     this.globalData.navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
+
+    // AI 客服服务地址（Python Flask，端口 5000）
+    // 开发者工具用本机地址；真机用电脑热点地址，和 utils/request.js 的 8080 是同一台电脑
+    this.globalData.aiBaseUrl = systemInfo.platform === 'devtools'
+      ? 'http://127.0.0.1:5000'
+      : 'http://192.168.137.1:5000';
   },
 
   onShow: function () {
@@ -34,6 +40,7 @@ App({
 
   globalData: {
     baseUrl: 'http://localhost:8080',
+    aiBaseUrl: 'http://192.168.137.1:5000',
     systemInfo: null,
     statusBarHeight: 0,
     navBarHeight: 44,

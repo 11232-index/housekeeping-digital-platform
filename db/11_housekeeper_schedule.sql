@@ -13,4 +13,4 @@ CREATE TABLE `housekeeper_schedule` (
   PRIMARY KEY (`id`),
   KEY `idx_housekeeper` (`housekeeper_id`),
   KEY `idx_date` (`schedule_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='家政员预约时间表';
+) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='家政员预约时间表';

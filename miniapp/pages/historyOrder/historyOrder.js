@@ -3,7 +3,7 @@ var util = require('../../utils/util.js');
 
 Page({
   data: {
-    tabs: ['全部','待付款','待接单','退款中','已取消'],
+    tabs: ['全部','待付款','待接单','已接单','服务中','已完成','待退款','已取消'],
     tabIndex: 0,
     orderList: [],
     page: 1, pageSize: 10, hasMore: true,
@@ -22,7 +22,8 @@ Page({
   loadOrders: function(isLoadMore) {
     if (this.data.loading) return;
     var that = this;
-    var statusMap = [null, 1, 2, 6, 7]; // 全部=null, 待付款=1, 待接单=2, 退款中=6, 已取消=7
+    // 全部=null（不传 status，即包含所有状态，含待退款）；其余与订单状态码一一对应
+    var statusMap = [null, 1, 2, 3, 4, 5, 6, 7];
     var page = isLoadMore ? this.data.page : 1;
     var s = statusMap[this.data.tabIndex];
     var params = { page: page, pageSize: this.data.pageSize };

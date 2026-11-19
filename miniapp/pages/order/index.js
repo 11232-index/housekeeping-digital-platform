@@ -19,7 +19,10 @@ Page({
     showRequirementPop: false, currentItemIndex: -1, currentRequirements: [],
     requirementsList: [], singleMode: false, hkMode: false,
     showTimePop: false, showDurationPop: false,
-    submitting: false
+    submitting: false,
+    // 优惠券（只有服务预约用得上；家政员预约不显示入口）
+    showVoucherPop: false, usableVoucherList: [], selectedVoucher: null,
+    originalPrice: '0.00', discountAmount: '0.00'
   },
   onShow: function() {
     if (!this.data.hkMode) {
@@ -58,6 +61,10 @@ Page({
       this.loadRequirementsFromStorage();
     }
     this.loadDefaultAddress();
+    // 服务预约才加载可用优惠券（家政员预约用不了券，入口也不显示）
+    if (!this.data.hkMode) {
+      this.loadUsableVouchers();
+    }
   },
   onShow: function() {
     if (!this.data.singleMode && !this.data.hkMode) { this.loadCart(); }
@@ -129,6 +136,70 @@ Page({
     var idx = e.currentTarget.dataset.index;
     this.setData({ serviceDuration: DURATION_OPTIONS[idx], showDurationPop: false });
   },
+
+  // ========== 优惠券（仅服务预约可用） ==========
+  onPickVoucher: function() {
+    if (this.data.usableVoucherList.length === 0) {
+      wx.showToast({ title: '暂无可用优惠券', icon: 'none' });
+      return;
+    }
+    this.setData({ showVoucherPop: true });
+  },
+
+  closeVoucherPop: function() { this.setData({ showVoucherPop: false }); },
+
+  onSelectVoucher: function(e) {
+    var idx = e.currentTarget.dataset.index;
+    var list = this.data.usableVoucherList;
+    if (!list || !list[idx]) return;
+    // 一次只能选一张：直接替换
+    this.setData({ selectedVoucher: list[idx], showVoucherPop: false });
+    this.recalcTotal();
+  },
+
+  clearVoucher: function() {
+    this.setData({ selectedVoucher: null, showVoucherPop: false });
+    this.recalcTotal();
+  },
+
+  /**
+   * 重算合计：选了券就按「原价 × 折扣率 ÷ 100」算折后价，并算出优惠了多少。
+   * 算法与后端 OrderServiceImpl#applyVoucher 一致，都保留两位小数。
+   */
+  recalcTotal: function() {
+    var original = parseFloat(this.data.originalPrice) || 0;
+    var voucher = this.data.selectedVoucher;
+    if (!voucher) {
+      this.setData({ totalPrice: original.toFixed(2), discountAmount: '0.00' });
+      return;
+    }
+    var rate = voucher.actualValue || 100;
+    var finalAmount = Math.round(original * rate) / 100;
+    this.setData({
+      totalPrice: finalAmount.toFixed(2),
+      discountAmount: (original - finalAmount).toFixed(2)
+    });
+  },
+
+  /**
+   * 加载「我的优惠券」里未使用的那部分供下单选择。
+   * 已使用的券不在这里出现（用户要求选券时不给选已使用的）。
+   */
+  loadUsableVouchers: function() {
+    var that = this;
+    request.get('/user/voucher/mine').then(function(res) {
+      var list = res.data || [];
+      var usable = [];
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].status === 0) {
+          // 顺带把折扣率转成「8折」这种好显示的文案
+          list[i].discountText = ((list[i].actualValue || 100) / 10) + '折';
+          usable.push(list[i]);
+        }
+      }
+      that.setData({ usableVoucherList: usable });
+    }).catch(function() { /* 券拉不到不影响下单，按不用券处理 */ });
+  },
   // ========== 加载购物车 ==========
   loadCart: function() {
     var that = this;
@@ -138,13 +209,15 @@ Page({
       wx.setStorageSync('cartList', cartList);
       var tp = 0, tc = 0;
       cartList.forEach(function(item) { tc += item.quantity || 0; tp += (item.price || 0) * (item.quantity || 0); });
-      that.setData({ cartList: cartList, totalPrice: tp.toFixed(2), totalCount: tc });
+      that.setData({ cartList: cartList, originalPrice: tp.toFixed(2), totalCount: tc });
+      that.recalcTotal();
     }).catch(function(err) {
       console.log('加载预约清单失败，使用本地缓存', err);
       var cartList = wx.getStorageSync('cartList') || [];
       var tp = 0, tc = 0;
       cartList.forEach(function(item) { tc += item.quantity || 0; tp += (item.price || 0) * (item.quantity || 0); });
-      that.setData({ cartList: cartList, totalPrice: tp.toFixed(2), totalCount: tc });
+      that.setData({ cartList: cartList, originalPrice: tp.toFixed(2), totalCount: tc });
+      that.recalcTotal();
     });
   },
 
@@ -205,7 +278,8 @@ Page({
         item.quantity = 1;
         var cartList = [item];
         var tp = item.price || 0;
-        this.setData({ singleMode: true, cartList: cartList, totalPrice: tp.toFixed(2), totalCount: 1 });
+        this.setData({ singleMode: true, cartList: cartList, originalPrice: tp.toFixed(2), totalCount: 1 });
+        this.recalcTotal();
       } catch(e) { this.loadCart(); }
       wx.removeStorageSync('singleOrderItem');
     } else { this.loadCart(); }
@@ -302,6 +376,10 @@ Page({
             serviceDuration: that.data.serviceDuration,
             remark: that.data.remark
           };
+          // 服务预约且选了券才带上（家政员预约用不了券）
+          if (!that.data.hkMode && that.data.selectedVoucher) {
+            dto.voucherId = that.data.selectedVoucher.voucherId;
+          }
           // 家政员模式：传 scheduleId
           if (that.data.hkMode && that.data.cartList.length === 1) {
             dto.housekeeperScheduleId = that.data.cartList[0].hkScheduleId;

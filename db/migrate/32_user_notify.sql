@@ -22,4 +22,4 @@ CREATE TABLE IF NOT EXISTS `user_notify` (
   PRIMARY KEY (`id`),
   KEY `idx_user_read` (`user_id`, `read_flag`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户订单消息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='用户订单消息表';

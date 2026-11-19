@@ -1,0 +1,69 @@
+.page{min-height:100vh;background:#f5f5f5;padding:24rpx 24rpx 60rpx;box-sizing:border-box}
+.hero{padding:16rpx 8rpx 24rpx}
+.hero-title{display:block;font-size:40rpx;font-weight:bold;color:#1a1a1a}
+.hero-sub{display:block;margin-top:10rpx;font-size:26rpx;color:#888;line-height:1.6}
+.search-card{background:#fff;border-radius:20rpx;padding:24rpx;box-shadow:0 4rpx 20rpx rgba(0,0,0,.04)}
+.search-textarea{width:100%;min-height:120rpx;font-size:28rpx;line-height:1.6;color:#333}
+.search-placeholder{color:#bbb}
+.search-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16rpx}
+.search-count{font-size:22rpx;color:#bbb}
+.search-btn{padding:14rpx 36rpx;border-radius:36rpx;background:linear-gradient(135deg,#1976d2 0%,#42a5f5 100%);color:#fff;font-size:26rpx;font-weight:bold;box-shadow:0 4rpx 12rpx rgba(25,118,210,.25)}
+.search-btn.disabled{opacity:.45;box-shadow:none}
+.section{margin-top:32rpx}
+.section-title{font-size:28rpx;font-weight:bold;color:#333;margin:0 8rpx 16rpx}
+.example-list{display:flex;flex-wrap:wrap;gap:16rpx}
+.example-item{padding:12rpx 24rpx;background:#fff;border:1rpx solid #e8e8e8;border-radius:30rpx;font-size:24rpx;color:#555}
+.example-item:active{background:#e3f2fd;border-color:#1976d2;color:#1976d2}
+.answer-card{margin-top:24rpx;background:#fff;border-radius:20rpx;padding:24rpx;font-size:26rpx;line-height:1.7;color:#333;border-left:8rpx solid #1976d2;box-shadow:0 4rpx 20rpx rgba(0,0,0,.04)}
+.result-card{margin-top:24rpx;background:#fff;border-radius:20rpx;padding:28rpx;box-shadow:0 4rpx 20rpx rgba(0,0,0,.04)}
+.result-empty{display:flex;flex-direction:column;align-items:center;padding:20rpx 0}
+.result-icon{font-size:56rpx}
+.result-title{margin-top:16rpx;font-size:28rpx;font-weight:bold;color:#333}
+.result-desc{margin-top:10rpx;font-size:24rpx;color:#999;line-height:1.6;text-align:center}
+.result-item{display:flex;align-items:flex-start;gap:20rpx}
+.result-item:active{opacity:.85}
+.result-img{width:160rpx;height:160rpx;border-radius:16rpx;flex-shrink:0;background:#f0f0f0}
+.result-img-empty{display:flex;align-items:center;justify-content:center;font-size:48rpx;color:#bbb}
+.result-body{flex:1;min-width:0}
+.result-body .result-desc{text-align:left}
+.result-head{display:flex;align-items:center;justify-content:space-between}
+.result-name{font-size:32rpx;font-weight:bold;color:#333}
+.result-type{padding:4rpx 16rpx;border-radius:20rpx;background:#e3f2fd;color:#1976d2;font-size:22rpx}
+.result-meta{display:flex;align-items:center;gap:20rpx;margin-top:14rpx}
+.result-price{color:#e94e3c;font-size:30rpx;font-weight:bold}
+.result-rating{color:#f5a623;font-size:24rpx}
+.result-position{color:#666;font-size:24rpx}
+.result-desc{margin-top:14rpx;font-size:24rpx;color:#666;line-height:1.6}
+.result-slots{display:flex;flex-wrap:wrap;align-items:center;gap:12rpx;margin-top:16rpx}
+.slot-title{font-size:22rpx;color:#999}
+.slot-item{padding:6rpx 16rpx;background:#e8f5e9;color:#2e7d32;border-radius:16rpx;font-size:22rpx}
+.slot-empty{font-size:22rpx;color:#bbb}
+.result-reason{margin-top:14rpx;font-size:22rpx;color:#999}
+
+/* 加入预约清单 / 详情弹窗 / 需求弹窗（与服务预约页一致） */
+.result-action{display:flex;align-items:center;justify-content:flex-end;margin-top:16rpx}
+.btn-add-cart{padding:8rpx 20rpx;border-radius:24rpx;background:#fff;color:#1976d2;font-size:24rpx;line-height:36rpx;text-align:center;border:2rpx solid #1976d2}
+.pop-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200}
+.detail-pop{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24rpx 24rpx 0 0;padding:0 0 40rpx}
+.detail-image{width:100%;height:400rpx;border-radius:24rpx 24rpx 0 0}
+.detail-title{font-size:36rpx;font-weight:bold;padding:24rpx 32rpx 12rpx;color:#333}
+.detail-desc{font-size:26rpx;color:#888;padding:0 32rpx 20rpx}
+.detail-price{padding:0 32rpx 20rpx;color:#e94e3c;font-weight:bold}
+.detail-price .price-symbol{font-size:24rpx}
+.detail-price .price-value{font-size:40rpx}
+.detail-action{display:flex;align-items:center;justify-content:flex-end;padding:0 32rpx;gap:16rpx}
+.btn-add-big{padding:16rpx 40rpx;background:#1976d2;color:#fff;border-radius:40rpx;font-size:28rpx}
+.detail-close{position:absolute;top:20rpx;right:20rpx;width:56rpx;height:56rpx;line-height:56rpx;text-align:center;font-size:36rpx;color:#999;border-radius:50%;background:#f5f5f5}
+.spec-pop{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24rpx 24rpx 0 0;padding:0 0 120rpx;max-height:70vh;display:flex;flex-direction:column}
+.spec-pop-title{font-size:34rpx;font-weight:bold;padding:30rpx 32rpx 20rpx;color:#333;text-align:center}
+.spec-pop-body{flex:1;padding:0 32rpx;max-height:50vh}
+.spec-group{margin-bottom:28rpx}
+.spec-group-title{font-size:28rpx;color:#666;margin-bottom:16rpx}
+.spec-options{display:flex;flex-wrap:wrap;gap:16rpx}
+.spec-option{padding:12rpx 28rpx;border-radius:32rpx;background:#f5f5f5;color:#333;font-size:26rpx;border:2rpx solid transparent}
+.spec-option.active{border-color:#1976d2;color:#1976d2;background:#e3f2fd}
+.spec-pop-footer{display:flex;align-items:center;justify-content:center;padding:20rpx 32rpx 0;border-top:1rpx solid #f0f0f0;margin-top:12rpx}
+.spec-confirm-btn{padding:16rpx 48rpx;background:#1976d2;color:#fff;border-radius:40rpx;font-size:28rpx;font-weight:bold}
+.spec-close{position:absolute;top:20rpx;right:20rpx;width:48rpx;height:48rpx;line-height:48rpx;text-align:center;font-size:32rpx;color:#999;border-radius:50%;background:#f5f5f5}
+.loading-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.loading-gif{width:100rpx;height:100rpx}

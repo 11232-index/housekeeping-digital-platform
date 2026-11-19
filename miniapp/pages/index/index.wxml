@@ -1,6 +1,7 @@
 <view class="home-page">
   <view class="shop-header">
     <image class="shop-header-bg" src="../../icons/2A98E2ACF9615ABF5CC32A95AEE40183.jpg" mode="aspectFill"></image>
+    <view class="shop-header-mask"></view>
     <view class="shop-info-card">
       <view class="shop-top">
         <image class="shop-logo" src="../../icons/JMandBK.jpg" mode="aspectFill"></image>
@@ -18,7 +19,7 @@
       </view>
       <view class="shop-bottom">
         <view class="shop-desc">{{shopDesc}}</view>
-        <view class="shop-address"><icon type="info" size="12"></icon><text>{{shopAddress}}</text></view>
+        <view class="shop-address"><icon type="info" size="12" color="rgba(255,255,255,0.78)"></icon><text>{{shopAddress}}</text></view>
       </view>
     </view>
   </view>
@@ -35,20 +36,24 @@
   <!-- 快捷入口 -->
   <view class="quick-nav">
     <view class="quick-nav-item" data-page="updates" bindtap="onNavTap">
-      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/7184d268-216d-4d95-8257-013115e69e87.jpg" mode="widthFix"></image></view>
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="../../icons/nav/nav-updates.jpg" mode="widthFix"></image></view>
       <text class="quick-nav-text">最新动态</text>
     </view>
     <view class="quick-nav-item" data-page="service-intro" bindtap="onNavTap">
-      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/e27b9ffd-403d-418c-b5e8-d95f62ac725d.jpg" mode="widthFix"></image></view>
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="../../icons/nav/nav-service-intro.jpg" mode="widthFix"></image></view>
       <text class="quick-nav-text">服务介绍</text>
     </view>
     <view class="quick-nav-item" data-page="housekeeper" bindtap="onNavTap">
-      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/406b4992-e14f-4278-9aa9-706c81aa0274.jpg" mode="widthFix"></image></view>
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="../../icons/nav/nav-housekeeper.jpg" mode="widthFix"></image></view>
       <text class="quick-nav-text">家政员预约</text>
     </view>
     <view class="quick-nav-item" data-page="about" bindtap="onNavTap">
-      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="https://ni-39.oss-cn-beijing.aliyuncs.com/2b0d79ad-4114-4bda-a606-835a2e13f81f.jpg" mode="widthFix"></image></view>
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="../../icons/nav/nav-about.jpg" mode="widthFix"></image></view>
       <text class="quick-nav-text">关于我们</text>
+    </view>
+    <view class="quick-nav-item" data-page="customer-service" bindtap="onNavTap">
+      <view class="quick-nav-img-wrap"><image class="quick-nav-img" src="../../icons/nav/nav-customer-service.jpg" mode="widthFix"></image></view>
+      <text class="quick-nav-text">智能客服</text>
     </view>
   </view>
 

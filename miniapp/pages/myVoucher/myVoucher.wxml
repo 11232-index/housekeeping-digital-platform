@@ -1,0 +1,28 @@
+<wxs module="v">
+var discountText = function(actualValue) {
+  if (!actualValue) return '--';
+  return (actualValue / 10) + '折';
+};
+module.exports = { discountText: discountText };
+</wxs>
+
+<view class="mv-page">
+  <block wx:if="{{list.length > 0}}">
+    <view wx:for="{{list}}" wx:key="id" class="mv-card {{item.status === 1 ? 'mv-used' : ''}}">
+      <view class="mv-left">
+        <text class="mv-discount">{{v.discountText(item.actualValue)}}</text>
+        <text class="mv-type">{{item.type === 1 ? '秒杀券' : '普通券'}}</text>
+      </view>
+      <view class="mv-right">
+        <text class="mv-title">{{item.title}}</text>
+        <text wx:if="{{item.subTitle}}" class="mv-sub">{{item.subTitle}}</text>
+        <text wx:if="{{item.rules}}" class="mv-rules">使用规则：{{item.rules}}</text>
+        <text class="mv-time">领取时间：{{item.claimTime}}</text>
+      </view>
+      <view wx:if="{{item.status === 1}}" class="mv-used-tag">已使用</view>
+    </view>
+  </block>
+
+  <view wx:if="{{loading}}" class="mv-loading">加载中...</view>
+  <view wx:if="{{!loading && list.length === 0}}" class="mv-empty">还没有优惠券，去首页领一张吧</view>
+</view>

@@ -11,4 +11,4 @@ CREATE TABLE `order_notify` (
   PRIMARY KEY (`id`),
   KEY `idx_order_id` (`order_id`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单提醒消息表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='订单提醒消息表';

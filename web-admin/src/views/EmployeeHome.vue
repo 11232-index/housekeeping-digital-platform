@@ -8,6 +8,31 @@
         <span class="shop-status-tag" :class="shopStatus === 1 ? 'open' : 'closed'">{{ shopStatus === 1 ? '🟢 营业中' : '🔴 打烊中' }}</span>
       </div>
       <div class="header-right">
+        <!-- 订单提醒消息中心 -->
+        <div class="notify-dropdown">
+          <div class="notify-btn" @click.stop="toggleNotify">
+            <span class="notify-icon">🔔</span>
+            <span v-if="unreadCount > 0" class="notify-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+          </div>
+          <div v-show="showNotify" class="notify-panel">
+            <div class="notify-panel-head">
+              <span>订单提醒</span>
+              <span class="notify-allread" @click.stop="handleNotifyAllRead">全部已读</span>
+            </div>
+            <div class="notify-panel-body">
+              <div v-if="notifyList.length === 0" class="notify-empty">暂无消息</div>
+              <div v-for="item in notifyList" :key="item.id"
+                   class="notify-item" :class="{ unread: !item.read }"
+                   @click.stop="openNotify(item)">
+                <div class="notify-item-top">
+                  <span class="notify-item-title">{{ item.read ? '' : '● ' }}{{ item.title }}</span>
+                  <span class="notify-item-time">{{ item.createTime || '' }}</span>
+                </div>
+                <div class="notify-item-content">{{ item.content }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="user-dropdown" @click.stop="toggleDropdown">
           <span class="user-name">{{ employeeFullName }}</span>
           <span class="dropdown-icon">▼</span>
@@ -29,23 +54,38 @@
     <div class="main-content">
       <!-- 左侧导航栏（按角色动态显示） -->
       <div class="sidebar" :class="{ collapsed: sidebarCollapsed }">
-        <div v-for="menu in visibleMenus" :key="menu.key"
-             class="nav-item" :class="{ active: currentRoute === menu.key }"
-             @click="navigateTo(menu.path)">
-          <span class="nav-icon">{{ menu.icon }}</span>
-          <span v-show="!sidebarCollapsed" class="nav-text">{{ menu.text }}</span>
-        </div>
+        <template v-for="menu in visibleMenus" :key="menu.key">
+          <!-- 带子菜单的一级菜单（订单管理） -->
+          <template v-if="menu.children">
+            <div class="nav-item"
+                 :class="{ 'nav-parent-active': isParentOf(menu) }"
+                 @click="toggleMenu(menu.key)">
+              <span class="nav-icon">{{ menu.icon }}</span>
+              <span v-show="!sidebarCollapsed" class="nav-text">{{ menu.text }}</span>
+              <span v-show="!sidebarCollapsed" class="nav-arrow" :class="{ expanded: expandedMenus.includes(menu.key) }">▸</span>
+            </div>
+            <div v-show="expandedMenus.includes(menu.key) && !sidebarCollapsed" class="nav-children">
+              <div v-for="child in menu.children" :key="child.key"
+                   class="nav-item nav-child" :class="{ active: currentRoute === child.key }"
+                   @click="navigateTo(child.path)">
+                <span class="nav-text">{{ child.text }}</span>
+              </div>
+            </div>
+          </template>
+          <!-- 普通菜单 -->
+          <div v-else
+               class="nav-item" :class="{ active: currentRoute === menu.key }"
+               @click="navigateTo(menu.path)">
+            <span class="nav-icon">{{ menu.icon }}</span>
+            <span v-show="!sidebarCollapsed" class="nav-text">{{ menu.text }}</span>
+          </div>
+        </template>
       </div>
 
       <!-- 右侧内容区 -->
       <div class="content-area">
-        <router-view v-if="currentRoute === 'category' || currentRoute === 'service-item' || currentRoute === 'service-package' || currentRoute === 'schedule' || currentRoute === 'voucher'" />
-        <div v-else>
-          <p>用户：{{ employeeName }}</p>
-          <p>姓名：{{ employeeFullName }}</p>
-          <p>员工ID：{{ employeeId }}</p>
-          <p class="token-info">Token将在 {{ remainingTime }} 后过期</p>
-        </div>
+        <router-view v-if="['category','service-item','service-package','schedule','voucher','order-service','order-housekeeper'].includes(currentRoute)" />
+        <EmployeeWorkbench v-else-if="currentRoute === 'workbench'" :role="employeeRole" :unread-count="unreadCount" @open-notify="toggleNotify" />
       </div>
     </div>
 
@@ -100,6 +140,9 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { employeeLogout, employeeEditPassword } from '@/api/employee-auth'
 import { getShopStatus } from '@/api/shop'
+import { connectOrderNotify, closeOrderNotify, setOrderNotifyListener } from '@/utils/orderNotify'
+import { getOrderNotifyList, getUnreadCount, markNotifyRead, markAllNotifyRead } from '@/api/order-notify'
+import EmployeeWorkbench from './EmployeeWorkbench.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -115,27 +158,63 @@ const loggingOut = ref(false)
 const savingPassword = ref(false)
 const shopStatus = ref<number>(1)
 
+// 订单提醒消息中心
+const showNotify = ref(false)
+const notifyList = ref<any[]>([])
+const unreadCount = ref(0)
+
 let timer: number | null = null
+let notifyTimer: number | null = null
 
 // 当前员工角色
 const employeeRole = ref(sessionStorage.getItem('employeeRole') || 'staff')
 
+// 子菜单项
+interface NavChild {
+  key: string
+  text: string
+  path: string
+}
+
+// 一级菜单项（带 children 的可展开）
+interface NavMenu {
+  key: string
+  text: string
+  icon: string
+  path?: string
+  roles: string[]
+  children?: NavChild[]
+}
+
 // 全部菜单定义（含角色限制）
-const allMenus = [
+const allMenus: NavMenu[] = [
   { key: 'workbench',        text: '工作台',   icon: '🏠', path: '/employee/home',            roles: ['admin', 'manager', 'staff', 'cleaner'] },
   { key: 'category',         text: '分类管理', icon: '📂', path: '/employee/category',        roles: ['admin', 'manager'] },
   { key: 'service-item',     text: '服务管理', icon: '🛠', path: '/employee/service-item',    roles: ['admin', 'manager'] },
   { key: 'service-package',  text: '套餐管理', icon: '📦', path: '/employee/service-package', roles: ['admin', 'manager'] },
   { key: 'schedule',         text: '预约管理', icon: '📅', path: '/employee/housekeeper-schedule', roles: ['admin', 'manager'] },
   { key: 'voucher',          text: '优惠券管理', icon: '🎟️', path: '/employee/voucher', roles: ['admin', 'manager'] },
+  {
+    key: 'order', text: '订单管理', icon: '📋', roles: ['admin', 'manager'],
+    children: [
+      { key: 'order-service',     text: '服务订单管理',   path: '/employee/order/service' },
+      { key: 'order-housekeeper', text: '家政员订单管理', path: '/employee/order/housekeeper' }
+    ]
+  },
 ]
 
 // 按角色过滤可见菜单
 const visibleMenus = computed(() => allMenus.filter(m => m.roles.includes(employeeRole.value)))
 
+// 展开的一级菜单（订单管理默认展开）
+const expandedMenus = ref<string[]>(['order'])
+
 // 当前路由
 const currentRoute = computed(() => {
   const path = route.path
+  // 注意：/employee/order/housekeeper 必须排在 /employee/order 之前判断
+  if (path.includes('/employee/order/housekeeper')) return 'order-housekeeper'
+  if (path.includes('/employee/order')) return 'order-service'
   if (path.includes('/employee/category')) return 'category'
   if (path.includes('/employee/service-item')) return 'service-item'
   if (path.includes('/employee/service-package')) return 'service-package'
@@ -144,9 +223,25 @@ const currentRoute = computed(() => {
   return 'workbench'
 })
 
+// 当前路由是否落在该一级菜单的子菜单里（用于父项高亮）
+const isParentOf = (menu: NavMenu) =>
+  !!menu.children?.some((c) => c.key === currentRoute.value)
+
+// 展开/收起子菜单；侧边栏处于折叠态时先展开侧边栏
+const toggleMenu = (key: string) => {
+  if (sidebarCollapsed.value) {
+    sidebarCollapsed.value = false
+    if (!expandedMenus.value.includes(key)) expandedMenus.value.push(key)
+    return
+  }
+  const i = expandedMenus.value.indexOf(key)
+  if (i >= 0) expandedMenus.value.splice(i, 1)
+  else expandedMenus.value.push(key)
+}
+
 // 导航到指定路由
-const navigateTo = (path: string) => {
-  router.push(path)
+const navigateTo = (path?: string) => {
+  if (path) router.push(path)
 }
 
 // 密码表单
@@ -275,6 +370,46 @@ const handleLogout = async () => {
   }
 }
 
+// ========== 订单提醒消息中心 ==========
+const loadNotifyList = async () => {
+  try {
+    const res: any = await getOrderNotifyList(30)
+    if (res.code === 1) notifyList.value = res.data || []
+  } catch (e) { /* 忽略 */ }
+}
+const refreshUnread = async () => {
+  try {
+    const res: any = await getUnreadCount()
+    if (res.code === 1) unreadCount.value = Number(res.data) || 0
+  } catch (e) { /* 忽略 */ }
+}
+const toggleNotify = () => {
+  showNotify.value = !showNotify.value
+  if (showNotify.value) loadNotifyList()
+}
+const handleNotifyAllRead = async () => {
+  if (unreadCount.value <= 0) return
+  try {
+    await markAllNotifyRead()
+  } catch (e) { /* 忽略 */ }
+  await loadNotifyList()
+  refreshUnread()
+}
+const openNotify = async (item: any) => {
+  if (item && item.id && !item.read) {
+    try { await markNotifyRead(item.id) } catch (e) { /* 忽略 */ }
+    refreshUnread()
+  }
+  showNotify.value = false
+  if (item && item.orderId) {
+    // _t 时间戳：保证即使同一 orderId 连续点击，路由也会变化、订单页能重新弹详情
+    router.push({
+      path: '/employee/order',
+      query: { orderId: String(item.orderId), _t: Date.now() }
+    })
+  }
+}
+
 onMounted(() => {
   employeeName.value = sessionStorage.getItem('employeeName') || '未知用户'
   employeeFullName.value = sessionStorage.getItem('employeeFullName') || '未知用户'
@@ -283,6 +418,13 @@ onMounted(() => {
 
   calculateRemainingTime()
   timer = setInterval(calculateRemainingTime, 1000) as unknown as number
+
+  // 订单提醒：来单/催单 WebSocket 连接 + 弹窗/语音播报
+  connectOrderNotify()
+  // 消息中心：先拉一次未读数 + 每 20s 轮询 + 收到 WS 消息即时刷新
+  refreshUnread()
+  notifyTimer = window.setInterval(refreshUnread, 20000)
+  setOrderNotifyListener(() => { refreshUnread() })
 
   // 获取店铺营业状态
   getShopStatus().then((res: any) => {
@@ -293,11 +435,15 @@ onMounted(() => {
 
   document.addEventListener('click', () => {
     showDropdown.value = false
+    showNotify.value = false
   })
 })
 
 onUnmounted(() => {
   clearTimer()
+  closeOrderNotify()
+  if (notifyTimer !== null) { clearInterval(notifyTimer); notifyTimer = null }
+  setOrderNotifyListener(null)
 })
 </script>
 
@@ -360,7 +506,42 @@ onUnmounted(() => {
 
 .header-right {
   position: relative;
+  display: flex;
+  align-items: center;
 }
+
+/* 订单提醒消息中心 */
+.notify-dropdown { position: relative; margin-right: 12px; }
+.notify-btn {
+  position: relative; width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); transition: all .2s;
+}
+.notify-btn:hover { background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+.notify-icon { font-size: 20px; }
+.notify-badge {
+  position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 8px; background: #e94e3c; color: #fff; font-size: 11px; line-height: 16px; text-align: center;
+}
+.notify-panel {
+  position: absolute; top: 120%; right: 0; width: 340px; background: #fff; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16); overflow: hidden; z-index: 120;
+}
+.notify-panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 15px; font-weight: 600; color: #333;
+}
+.notify-allread { color: #1976d2; cursor: pointer; font-weight: 400; font-size: 12px; }
+.notify-panel-body { max-height: 360px; overflow-y: auto; }
+.notify-empty { text-align: center; color: #999; padding: 30px 0; font-size: 13px; }
+.notify-item { padding: 12px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
+.notify-item:hover { background: #f5f5f5; }
+.notify-item.unread { background: #eaf4ff; }
+.notify-item-top { display: flex; justify-content: space-between; align-items: center; }
+.notify-item-title { font-size: 14px; color: #333; font-weight: 600; }
+.notify-item.unread .notify-item-title { color: #1976d2; }
+.notify-item-time { font-size: 12px; color: #999; flex-shrink: 0; margin-left: 8px; }
+.notify-item-content { font-size: 13px; color: #666; margin-top: 4px; word-break: break-all; }
 
 /* 营业状态标签（只读） */
 .shop-status-tag {
@@ -500,6 +681,40 @@ onUnmounted(() => {
 .nav-text {
   white-space: nowrap;
   overflow: hidden;
+}
+
+/* 一级菜单展开箭头 */
+.nav-arrow {
+  margin-left: auto;
+  font-size: 12px;
+  color: #999;
+  transition: transform 0.3s;
+}
+
+.nav-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+/* 当前路由落在子菜单里时，父项浅色高亮（子项自身另有强高亮） */
+.nav-parent-active {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* 子菜单 */
+.nav-children {
+  background: #fafbfc;
+}
+
+.nav-child {
+  padding: 12px 20px 12px 56px;
+  font-size: 13px;
+}
+
+.nav-child.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-right: 3px solid #1976d2;
 }
 
 /* 右侧内容区 */

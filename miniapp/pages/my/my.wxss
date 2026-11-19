@@ -3,7 +3,6 @@
 .user-avatar-wrap{width:140rpx;height:140rpx;border-radius:50%;overflow:hidden;border:4rpx solid rgba(255,255,255,.5);margin-bottom:20rpx}
 .user-avatar{width:100%;height:100%}
 .user-name{font-size:36rpx;font-weight:bold;color:#fff}
-.user-phone{font-size:26rpx;color:rgba(255,255,255,.8);margin-top:8rpx}
 .worker-entry{background:linear-gradient(135deg,#43a047,#66bb6a);margin:20rpx;border-radius:16rpx;padding:28rpx 24rpx;display:flex;align-items:center}
 .worker-entry-icon{width:64rpx;height:64rpx;text-align:center;line-height:64rpx;font-size:40rpx;background:rgba(255,255,255,.25);border-radius:50%;margin-right:20rpx}
 .worker-entry-info{flex:1}
@@ -14,6 +13,8 @@
 .menu-item{display:flex;align-items:center;padding:30rpx 24rpx;border-bottom:1rpx solid #f5f5f5}
 .menu-icon{width:44rpx;height:44rpx;text-align:center;line-height:44rpx;margin-right:16rpx;font-size:28rpx}
 .menu-name{flex:1;font-size:28rpx;color:#333}
+/* 消息中心未读数角标 */
+.menu-badge{margin-right:12rpx;min-width:32rpx;height:32rpx;line-height:32rpx;padding:0 10rpx;border-radius:16rpx;background:#e94e3c;color:#fff;font-size:20rpx;text-align:center;box-sizing:border-box}
 .menu-arrow{font-size:28rpx;color:#ccc}
 .my-orders{padding:0 20rpx}
 .orders-title{font-size:32rpx;font-weight:bold;color:#333;padding:20rpx 0 10rpx}

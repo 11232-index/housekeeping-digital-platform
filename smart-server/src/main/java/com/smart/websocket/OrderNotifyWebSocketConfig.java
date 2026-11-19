@@ -18,9 +18,13 @@ public class OrderNotifyWebSocketConfig implements WebSocketConfigurer {
     @Autowired
     private OrderNotifyWebSocketServer orderNotifyWebSocketServer;
 
+    @Autowired
+    private OrderNotifyHandshakeInterceptor orderNotifyHandshakeInterceptor;
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(orderNotifyWebSocketServer, "/ws/order-notify")
+                .addInterceptors(orderNotifyHandshakeInterceptor)
                 .setAllowedOrigins("*");
     }
 }

@@ -2,16 +2,19 @@
 .whome-header{background:linear-gradient(135deg,#1976d2,#42a5f5);padding:60rpx 30rpx;display:flex;align-items:center}
 .whome-avatar-wrap{width:140rpx;height:140rpx;border-radius:50%;overflow:hidden;border:4rpx solid rgba(255,255,255,.5);flex-shrink:0}
 .whome-avatar{width:100%;height:100%}
-.whome-info{margin-left:30rpx}
+.whome-info{margin-left:30rpx;flex:1;min-width:0}
 .whome-name-row{display:flex;align-items:center}
 .whome-name{font-size:38rpx;font-weight:bold;color:#fff}
 .whome-tag{margin-left:16rpx;font-size:22rpx;color:#1976d2;background:#fff;border-radius:6rpx;padding:4rpx 14rpx}
-.whome-id{display:block;font-size:26rpx;color:rgba(255,255,255,.85);margin-top:10rpx}
+.whome-id{display:block;font-size:26rpx;color:rgba(255,255,255,.85);margin-top:10rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .whome-modules{margin:30rpx 20rpx 0}
 .module-card{background:#fff;border-radius:16rpx;padding:32rpx 24rpx;margin-bottom:24rpx;display:flex;align-items:center;box-shadow:0 2rpx 8rpx rgba(0,0,0,.04)}
 .module-icon{width:84rpx;height:84rpx;text-align:center;line-height:84rpx;font-size:44rpx;background:#e3f2fd;border-radius:16rpx;margin-right:24rpx;flex-shrink:0}
 .module-info{flex:1}
 .module-name{display:block;font-size:32rpx;font-weight:bold;color:#333}
+.module-name-row{display:flex;align-items:center}
+.module-name-row .module-name{display:inline}
+.module-badge{margin-left:12rpx;min-width:32rpx;height:32rpx;line-height:32rpx;padding:0 10rpx;border-radius:16rpx;background:#e94e3c;color:#fff;font-size:20rpx;text-align:center;box-sizing:border-box}
 .module-desc{display:block;font-size:24rpx;color:#999;margin-top:8rpx}
 .module-arrow{font-size:32rpx;color:#ccc}
 .whome-logout{margin:40rpx 20rpx 0;height:88rpx;line-height:88rpx;text-align:center;background:#fff;color:#e94e3c;font-size:30rpx;border-radius:16rpx}

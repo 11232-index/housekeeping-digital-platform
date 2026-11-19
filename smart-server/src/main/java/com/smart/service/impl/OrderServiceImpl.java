@@ -3,6 +3,7 @@ package com.smart.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.smart.constant.MessageConstant;
+import com.smart.constant.OrderEventConstant;
 import com.smart.context.BaseContext;
 import com.smart.dto.OrderCancelDTO;
 import com.smart.dto.OrderDTO;
@@ -24,10 +25,10 @@ import com.smart.mapper.OrderDetailMapper;
 import com.smart.mapper.OrderMapper;
 import com.smart.mapper.UserVoucherMapper;
 import com.smart.mapper.VoucherMapper;
+import com.smart.mq.OrderDelayPublisher;
+import com.smart.mq.OrderEventPublisher;
 import com.smart.service.AddressBookService;
-import com.smart.service.OrderNotifyService;
 import com.smart.service.OrderService;
-import com.smart.service.UserNotifyService;
 import com.smart.service.HousekeeperScheduleService;
 import com.smart.service.ShoppingCartService;
 import com.smart.utils.OrderStatusUtil;
@@ -96,16 +97,16 @@ public class OrderServiceImpl implements OrderService {
     private HousekeeperMapper housekeeperMapper;
 
     @Autowired
-    private OrderNotifyService orderNotifyService;
-
-    @Autowired
-    private UserNotifyService userNotifyService;
-
-    @Autowired
     private VoucherMapper voucherMapper;
 
     @Autowired
     private UserVoucherMapper userVoucherMapper;
+
+    @Autowired
+    private OrderEventPublisher orderEventPublisher;
+
+    @Autowired
+    private OrderDelayPublisher orderDelayPublisher;
 
     // ==================== 用户端接口 ====================
 
@@ -185,6 +186,13 @@ public class OrderServiceImpl implements OrderService {
 
         // 7. 清空购物车
         shoppingCartService.clean(userId);
+
+        // 7.5 写订单事件到本地消息表（与订单同事务提交）
+        orderEventPublisher.publish(OrderEventConstant.CREATED, order);
+        orderDelayPublisher.scheduleUnpaidCancel(order);
+        if (order.getScheduleDate() != null && order.getScheduleTime() != null) {
+            orderDelayPublisher.scheduleAcceptCheck(order);
+        }
 
         // 8. 返回结果
         return buildSubmitVO(order);
@@ -271,6 +279,13 @@ public class OrderServiceImpl implements OrderService {
         }
         if (cartDTO.getServiceItemId() != null || cartDTO.getServicePackageId() != null) {
             shoppingCartService.sub(cartDTO, userId);
+        }
+
+        // 5.5 写订单事件到本地消息表（与订单同事务提交）
+        orderEventPublisher.publish(OrderEventConstant.CREATED, order);
+        orderDelayPublisher.scheduleUnpaidCancel(order);
+        if (order.getScheduleDate() != null && order.getScheduleTime() != null) {
+            orderDelayPublisher.scheduleAcceptCheck(order);
         }
 
         // 6. 返回结果
@@ -363,10 +378,9 @@ public class OrderServiceImpl implements OrderService {
             if (order.getHousekeeperScheduleId() != null) {
                 housekeeperScheduleService.tryRelease(order.getHousekeeperScheduleId());
             }
-            // 通知员工端：客户申请退款，需要及时处理
-            orderNotifyService.push("refund", "客户申请退款",
-                    "订单 " + order.getNumber() + " 客户申请退款：" + dto.getCancelReason() + "，请及时处理",
-                    order.getId(), order.getNumber(), order.getAmount());
+            // 通知由 MQ 消费者统一处理，这里只负责改状态
+            order.setStatus(Order.STATUS_REFUNDING);
+            orderEventPublisher.publish(OrderEventConstant.CANCELLED, order, null, dto.getCancelReason(), null, "user");
             log.info("订单进入待退款：id={}, reason={}", dto.getOrderId(), dto.getCancelReason());
             return;
         }
@@ -383,6 +397,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getHousekeeperScheduleId() != null) {
             housekeeperScheduleService.tryRelease(order.getHousekeeperScheduleId());
         }
+        order.setStatus(Order.STATUS_CANCELLED);
+        orderEventPublisher.publish(OrderEventConstant.CANCELLED, order, null, dto.getCancelReason(), null, "user");
         log.info("订单取消成功：id={}, reason={}", dto.getOrderId(), dto.getCancelReason());
     }
 
@@ -417,6 +433,11 @@ public class OrderServiceImpl implements OrderService {
         if (rows == 0) {
             throw new ServiceOrderBusinessException(MessageConstant.SERVICE_ORDER_STATUS_ERROR);
         }
+        order.setStatus(Order.STATUS_PENDING_ACCEPT);
+        order.setPayStatus(Order.PAY_STATUS_PAID);
+        order.setPayMethod(payMethod);
+        order.setPayTime(LocalDateTime.now());
+        orderEventPublisher.publish(OrderEventConstant.PAID, order);
         log.info("订单支付成功：id={}", orderId);
     }
 
@@ -475,6 +496,13 @@ public class OrderServiceImpl implements OrderService {
         int rows = orderMapper.statusCasWithActualTime(orderId, from, status);
         if (rows == 0) {
             throw new ServiceOrderBusinessException(stateChangedMessage(orderId));
+        }
+        Order order = orderMapper.getById(orderId);
+        if (order != null) {
+            order.setStatus(status);
+            String eventType = Order.STATUS_IN_SERVICE.equals(status)
+                    ? OrderEventConstant.ARRIVED : OrderEventConstant.COMPLETED;
+            orderEventPublisher.publish(eventType, order);
         }
         log.info("订单状态推进成功：orderId={}, {}→{}", orderId, from, status);
     }
@@ -603,10 +631,10 @@ public class OrderServiceImpl implements OrderService {
         //    服务订单的明细 housekeeper_id 为空，这条 SQL 影响 0 行，不会误伤服务名。
         orderDetailMapper.updateHousekeeperInfo(orderId, housekeeperId, hkName);
 
-        // 5) 通知员工端消息中心（同时走 WebSocket 广播）
-        orderNotifyService.push("assign", "订单已指派",
-                "订单 " + order.getNumber() + " 已指派给 " + hkName + "，等待其确认接单",
-                orderId, order.getNumber(), order.getAmount());
+        // 5) 通知由 MQ 消费者统一处理，这里只负责写状态和发事件
+        order.setHousekeeperId(housekeeperId);
+        orderEventPublisher.publish(OrderEventConstant.ASSIGNED, order, BaseContext.getCurrentId(), null, null, "employee");
+        orderDelayPublisher.scheduleAcceptCheck(order);
         log.info("指派完成：orderId={}, housekeeperId={}", orderId, housekeeperId);
     }
 
@@ -634,10 +662,9 @@ public class OrderServiceImpl implements OrderService {
         // 刻意【不释放】预约时段：这类取消多半就是因为「家政员那个时间做不了」，
         // 放回「可约」只会让别的用户再约到同一个没人能做的时段。
         // 想重新开放的话去预约管理页手动改回「可约」。
-        // 通知下单用户：订单被取消，涉及退款，必须让用户知道
-        userNotifyService.push(order.getUserId(), "cancelled", "订单已取消",
-                "您的订单 " + order.getNumber() + " 已取消（" + reason + "），退款将尽快处理",
-                orderId, order.getNumber());
+        // 通知下单用户由 MQ 消费者统一处理
+        order.setStatus(Order.STATUS_REFUNDING);
+        orderEventPublisher.publish(OrderEventConstant.CANCELLED, order, BaseContext.getCurrentId(), reason, null, "employee");
         log.info("员工端取消成功，订单转入待退款：orderId={}", orderId);
     }
 
@@ -664,10 +691,10 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 同样不释放时段：这单是因为做不了/没人接才退的款，时段保持不可约
-        // 通知下单用户：退款处理完了，钱的事必须让用户知道
-        userNotifyService.push(order.getUserId(), "refunded", "退款已完成",
-                "您的订单 " + order.getNumber() + " 的退款已处理完成",
-                orderId, order.getNumber());
+        // 通知下单用户由 MQ 消费者统一处理
+        order.setStatus(Order.STATUS_CANCELLED);
+        order.setPayStatus(Order.PAY_STATUS_REFUND);
+        orderEventPublisher.publish(OrderEventConstant.REFUNDED, order, BaseContext.getCurrentId(), reason, null, "employee");
         log.info("退款完成，订单已取消：orderId={}", orderId);
     }
 

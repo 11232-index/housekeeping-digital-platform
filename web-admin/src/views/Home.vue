@@ -57,6 +57,10 @@
     <div class="main-content">
       <!-- 左侧导航栏 -->
       <div class="sidebar" :class="{ collapsed: sidebarCollapsed }">
+        <div class="nav-item" :class="{ active: currentRoute === 'home' }" @click="navigateTo('/home')">
+          <span class="nav-icon">📊</span>
+          <span v-show="!sidebarCollapsed" class="nav-text">工作台</span>
+        </div>
         <div class="nav-item" :class="{ active: currentRoute === 'employee' }" @click="navigateTo('/employee')">
           <span class="nav-icon">👥</span>
           <span v-show="!sidebarCollapsed" class="nav-text">员工管理</span>
@@ -86,10 +90,7 @@
       <!-- 右侧内容区 -->
       <div class="content-area">
         <router-view v-if="currentRoute !== 'home'" />
-        <div v-else>
-          <p>用户：{{ userName }}</p>
-          <p class="token-info">Token将在 {{ remainingTime }} 后过期</p>
-        </div>
+        <Dashboard v-else />
       </div>
     </div>
 
@@ -205,6 +206,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { logout, getEmployeeById, editPassword, editName, setSecurity } from '@/api/employee'
 import { getShopStatus, setShopStatus } from '@/api/shop'
+import Dashboard from './Dashboard.vue'
 
 const router = useRouter()
 const route = useRoute()

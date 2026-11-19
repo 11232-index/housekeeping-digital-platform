@@ -5,4 +5,4 @@ CREATE TABLE `order_notify_read` (
   `read_time` datetime DEFAULT NULL COMMENT '阅读时间',
   PRIMARY KEY (`employee_id`, `notify_id`),
   KEY `idx_notify_id` (`notify_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工已读消息关系表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='员工已读消息关系表';

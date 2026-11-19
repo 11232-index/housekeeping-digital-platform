@@ -1,6 +1,6 @@
 <wxs module="util">
 var getStatusText = function(status) {
-  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '待退款', '已取消'];
   return map[status] || '未知';
 };
 var parseReq = function(str) {
@@ -21,7 +21,7 @@ module.exports = { getStatusText: getStatusText, parseReq: parseReq };
   <scroll-view class="details-content" scroll-y="true">
     <view class="card status-card">
       <view class="status-title">{{util.getStatusText(order.status)}}</view>
-      <block wx:if="{{order.status === 1}}"><view class="status-time">请在15分钟内完成支付，超时将自动取消</view></block>
+      <block wx:if="{{order.status === 1}}"><view class="status-time">剩余支付时间 <text class="countdown-num">{{countdown}}</text>，超时将自动取消</view></block>
       <view class="status-actions">
         <button wx:if="{{order.status === 1}}" class="btn btn-outline" size="mini" bindtap="handleCancel">取消订单</button>
         <button wx:if="{{order.status === 1}}" class="btn btn-primary" size="mini" bindtap="handlePay">立即支付</button>
@@ -48,7 +48,11 @@ module.exports = { getStatusText: getStatusText, parseReq: parseReq };
           </view>
         </view>
       </view>
-      <view class="order-summary"><view class="summary-row"><text>合计</text><text class="summary-price">¥{{order.amount || '0.00'}}</text></view></view>
+      <view class="order-summary">
+        <view wx:if="{{order.voucherId}}" class="summary-row summary-sub"><text>优惠券</text><text class="summary-voucher">{{order.voucherTitle}}（{{order.voucherDiscount / 10}}折）</text></view>
+        <view wx:if="{{order.discountAmount}}" class="summary-row summary-sub"><text>优惠金额</text><text class="summary-discount">-¥{{order.discountAmount}}</text></view>
+        <view class="summary-row"><text>合计</text><text class="summary-price">¥{{order.amount || '0.00'}}</text></view>
+      </view>
     </view>
     <view class="card">
       <view class="info-row"><text class="info-label">预约时间</text><text>{{order.scheduleDate}} {{order.scheduleTime}}</text></view>
@@ -63,7 +67,11 @@ module.exports = { getStatusText: getStatusText, parseReq: parseReq };
       <view class="info-row"><text class="info-label">下单时间</text><text>{{order.orderTime || ''}}</text></view>
       <view class="info-row"><text class="info-label">支付方式</text><text>{{order.payMethod === 1 ? '微信支付' : order.payMethod === 2 ? '支付宝支付' : '--'}}</text></view>
       <view wx:if="{{order.payTime}}" class="info-row"><text class="info-label">付款时间</text><text>{{order.payTime}}</text></view>
-      <view wx:if="{{order.cancelReason && (order.status === 6 || order.status === 7)}}" class="info-row"><text class="info-label">取消原因</text><text>{{order.cancelReason}}</text></view>
+      <!-- 待退款：显示为什么转入待退款（超时未接单 / 家政员拒单 / 员工取消） -->
+      <view wx:if="{{order.status === 6 && order.cancelReason}}" class="info-row"><text class="info-label">待退款原因</text><text>{{order.cancelReason}}</text></view>
+      <!-- 已取消：优先显示员工填写的退款原因，同时保留此前转入待退款的原因 -->
+      <view wx:if="{{order.status === 7 && order.refundReason}}" class="info-row"><text class="info-label">退款原因</text><text>{{order.refundReason}}</text></view>
+      <view wx:if="{{order.status === 7 && order.cancelReason}}" class="info-row"><text class="info-label">取消原因</text><text>{{order.cancelReason}}</text></view>
       <view wx:if="{{order.cancelTime && order.status === 7}}" class="info-row"><text class="info-label">取消时间</text><text>{{order.cancelTime}}</text></view>
     </view>
     <view wx:if="{{housekeeperPhone}}" class="card contact-card" bindtap="handleCallHousekeeper"><text>联系家政员</text></view>

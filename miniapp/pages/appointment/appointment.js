@@ -28,9 +28,27 @@ Page({
   loadSchedules: function(housekeeperId) {
     var that = this;
     request.get('/user/housekeeper-schedule/available', { housekeeperId: housekeeperId }).then(function(res) {
-      that.setData({ scheduleList: res.data || [], selectedSlot: null });
+      that.setData({ scheduleList: that.filterBookableDates(res.data || []), selectedSlot: null });
     }).catch(function() {
       that.setData({ scheduleList: [], selectedSlot: null });
+    });
+  },
+
+  /**
+   * 只保留「明天起往后 3 天」的可预约时段。
+   * 例：今天 9/21 → 只展示 9/22、9/23、9/24；其余日期无论是否可约都不展示。
+   */
+  filterBookableDates: function(list) {
+    if (!list || list.length === 0) return [];
+    var DAY = 24 * 60 * 60 * 1000;
+    var todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    var start = new Date(todayStart.getTime() + DAY);   // 明天 00:00
+    var end = new Date(start.getTime() + 3 * DAY);      // 明天 + 3 天（不含）
+    return list.filter(function(slot) {
+      if (!slot.scheduleDate) return false;
+      var d = new Date(String(slot.scheduleDate).replace(/-/g, '/'));
+      return d.getTime() >= start.getTime() && d.getTime() < end.getTime();
     });
   },
 

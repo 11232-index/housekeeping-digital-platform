@@ -18,6 +18,7 @@ import ServiceForm from '../views/ServiceForm.vue'
 import ServicePackageManagement from '../views/ServicePackageManagement.vue'
 import ServicePackageForm from '../views/ServicePackageForm.vue'
 import CouponManagement from '../views/CouponManagement.vue'
+import OrderManagement from '../views/OrderManagement.vue'
 import EmployeeLogin from '../views/EmployeeLogin.vue'
 import EmployeeHome from '../views/EmployeeHome.vue'
 
@@ -162,6 +163,27 @@ const routes = [
         path: '/employee/voucher',
         name: 'CouponManagement',
         component: CouponManagement,
+        meta: { requiresAuth: true, portal: 'employee', roles: ['admin', 'manager'] }
+      },
+      // 订单管理拆两个版块：orders 表本身没有类型字段，
+      // 服务订单 = 明细含服务项目/服务套餐，家政员订单 = 明细含家政员
+      {
+        // 旧链接与消息中心跳转的兜底入口，保留 query（orderId）后转到服务订单
+        path: '/employee/order',
+        redirect: (to: { query: Record<string, any> }) => ({ path: '/employee/order/service', query: to.query })
+      },
+      {
+        path: '/employee/order/service',
+        name: 'ServiceOrderManagement',
+        component: OrderManagement,
+        props: { orderType: 'service' },
+        meta: { requiresAuth: true, portal: 'employee', roles: ['admin', 'manager'] }
+      },
+      {
+        path: '/employee/order/housekeeper',
+        name: 'HousekeeperOrderManagement',
+        component: OrderManagement,
+        props: { orderType: 'housekeeper' },
         meta: { requiresAuth: true, portal: 'employee', roles: ['admin', 'manager'] }
       },
     ]

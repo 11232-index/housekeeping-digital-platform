@@ -7,6 +7,7 @@ import com.smart.dto.HousekeeperPageQueryDTO;
 import com.smart.entity.Employee;
 import com.smart.entity.EmployeeDetail;
 import com.smart.entity.Housekeeper;
+import com.smart.exception.BaseException;
 import com.smart.mapper.EmployeeDetailMapper;
 import com.smart.mapper.EmployeeMapper;
 import com.smart.mapper.HousekeeperMapper;
@@ -20,6 +21,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -39,7 +41,18 @@ public class HousekeeperServiceImpl implements HousekeeperService {
             @CacheEvict(value = "housekeeper", allEntries = true),
             @CacheEvict(value = "housekeeperEmployee", allEntries = true)
     })
+    @Transactional
     public void save(HousekeeperDTO dto) {
+        // 插入前先校验：员工必须存在，且一个员工只能有一份家政员档案
+        if (dto.getEmployeeId() == null) {
+            throw new BaseException("员工id不能为空");
+        }
+        if (employeeMapper.getById(dto.getEmployeeId()) == null) {
+            throw new BaseException("员工不存在，不能创建家政员档案");
+        }
+        if (housekeeperMapper.getByEmployeeId(dto.getEmployeeId()) != null) {
+            throw new BaseException("该员工已有家政员档案，请勿重复创建");
+        }
         Housekeeper h = new Housekeeper();
         BeanUtils.copyProperties(dto, h);
         housekeeperMapper.insert(h);

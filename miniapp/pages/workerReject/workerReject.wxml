@@ -1,0 +1,20 @@
+<view class="wr-page">
+  <view class="wr-section">
+    <view class="wr-title">请选择{{pageTitle}}</view>
+    <view class="wr-tags">
+      <view wx:for="{{reasons}}" wx:key="*this" class="wr-tag {{selectedReason === item ? 'active' : ''}}" data-reason="{{item}}" bindtap="onSelectReason">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="wr-section">
+    <view class="wr-title">补充说明</view>
+    <textarea class="wr-textarea" placeholder="{{reasonPlaceholder}}" value="{{customReason}}" bindinput="onInput" maxlength="100"></textarea>
+  </view>
+
+  <view class="wr-tip">{{tipText}}</view>
+
+  <view class="wr-footer">
+    <view class="wr-btn wr-btn-cancel" bindtap="onCancel">返回</view>
+    <view class="wr-btn wr-btn-confirm" bindtap="onConfirm">{{confirmText}}</view>
+  </view>
+</view>

@@ -1,0 +1,59 @@
+<view class="cs-page">
+  <view class="cs-header">
+    <image class="cs-logo" src="/icons/customer-service.jpg" mode="aspectFill"></image>
+    <view class="cs-header-info">
+      <view class="cs-title-row">
+        <text class="cs-title">智能客服</text>
+        <text class="cs-badge">AI</text>
+      </view>
+      <text class="cs-subtitle">智能家政 · 为您在线解答</text>
+    </view>
+    <view class="cs-online"><text class="cs-dot"></text>在线</view>
+  </view>
+
+  <scroll-view class="cs-messages" scroll-y="true" scroll-top="{{scrollTop}}" scroll-with-animation="true">
+    <view wx:for="{{messages}}" wx:key="id" class="cs-msg {{item.role === 'user' ? 'cs-msg-user' : 'cs-msg-ai'}}">
+      <image wx:if="{{item.role === 'assistant'}}" class="cs-avatar" src="/icons/customer-service.jpg" mode="aspectFill"></image>
+
+      <view class="cs-bubble-wrap">
+        <view wx:if="{{item.role === 'assistant' && item.steps && item.steps.length}}" class="cs-steps">
+          <view wx:for="{{item.steps}}" wx:for-item="s" wx:key="step_id" class="cs-step cs-step-{{s.status}}">
+            <text class="cs-step-icon">{{s.icon}}</text>
+            <text class="cs-step-title">{{s.title}}</text>
+          </view>
+        </view>
+        <view class="cs-bubble {{item.role === 'user' ? 'cs-bubble-user' : 'cs-bubble-ai'}}">
+          <view wx:if="{{item.loading && !item.content}}" class="cs-typing">
+            <text></text><text></text><text></text>
+          </view>
+          <text wx:else class="cs-text">{{item.content}}</text>
+        </view>
+        <text wx:if="{{item.agent}}" class="cs-agent">{{item.agent}}</text>
+      </view>
+
+      <image wx:if="{{item.role === 'user'}}" class="cs-avatar" src="{{userAvatar}}" mode="aspectFill"></image>
+    </view>
+    <view class="cs-bottom-space"></view>
+  </scroll-view>
+
+  <view wx:if="{{messages.length <= 1}}" class="cs-quick">
+    <view wx:for="{{quickQuestions}}" wx:key="*this" class="cs-quick-item" data-q="{{item}}" bindtap="onQuickQuestion">{{item}}</view>
+  </view>
+
+  <view class="cs-input-bar">
+    <textarea
+      class="cs-input"
+      value="{{inputValue}}"
+      placeholder="请输入您的问题，例如：日常保洁多少钱？"
+      placeholder-class="cs-placeholder"
+      maxlength="500"
+      auto-height="true"
+      adjust-position="true"
+      cursor-spacing="20"
+      confirm-type="send"
+      bindinput="onInput"
+      bindconfirm="sendMessage"
+    ></textarea>
+    <view class="cs-send {{sending ? 'cs-send-disabled' : ''}}" bindtap="sendMessage">{{sending ? '回复中' : '发送'}}</view>
+  </view>
+</view>

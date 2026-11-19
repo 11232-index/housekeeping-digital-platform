@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `tb_user_voucher` (
   -- "我的优惠券"按 用户 + 状态 查
   KEY `idx_user_status` (`user_id`, `status`),
   KEY `idx_order` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户优惠券（领取与使用记录）';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='用户优惠券（领取与使用记录）';
 
 -- 2) 订单表记录用券情况（快照，订单详情直接展示，不用再回查券表）
 --    没有用券的订单，这几个字段都是 NULL

@@ -8,14 +8,17 @@ import com.smart.mapper.EmployeeDetailMapper;
 import com.smart.mapper.EmployeeMapper;
 import com.smart.mapper.HousekeeperMapper;
 import com.smart.entity.Housekeeper;
+import com.smart.exception.BaseException;
 import com.smart.result.PageResult;
 import com.smart.service.EmployeeService;
 import com.github.pagehelper.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -40,6 +43,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private org.springframework.cache.CacheManager cacheManager;
 
     @Override
+    @Transactional
     public void save(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
 
@@ -115,10 +119,15 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeDTO
      */
     @Override
+    @Transactional
     public void update(EmployeeDTO employeeDTO) {
         // 先查旧数据，用于判断角色是否变更
         Employee existing = employeeMapper.getById(employeeDTO.getId());
-        String oldRole = existing != null ? existing.getRole() : null;
+        if (existing == null) {
+            // 员工不存在时直接拒绝，避免继续插入一条没有对应员工的家政员档案
+            throw new BaseException("员工不存在");
+        }
+        String oldRole = existing.getRole();
         String newRole = employeeDTO.getRole();
 
         Employee employee = new Employee();
@@ -132,18 +141,32 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // 角色变更：不是cleaner → cleaner，新增家政员记录
         if (!"cleaner".equals(oldRole) && "cleaner".equals(newRole)) {
-            Housekeeper h = Housekeeper.builder()
-                    .employeeId(employeeDTO.getId())
-                    .name(employeeDTO.getName())
-                    .price(BigDecimal.ZERO)
-                    .rating(BigDecimal.ZERO)
-                    .rank(0)
-                    .carousel("")
-                    .review("")
-                    .build();
-            housekeeperMapper.insert(h);
-            clearHousekeeperCache();
-            log.info("员工角色变更为家政员，已创建家政员记录，employeeId={}", employeeDTO.getId());
+            // 先查是否已有家政员档案：重复提交/并发下不能再插一条
+            Housekeeper existingHousekeeper = housekeeperMapper.getByEmployeeId(employeeDTO.getId());
+            if (existingHousekeeper != null) {
+                existingHousekeeper.setName(employeeDTO.getName());
+                housekeeperMapper.update(existingHousekeeper);
+                clearHousekeeperCache();
+                log.info("家政员档案已存在，已同步姓名而不再重复创建，employeeId={}", employeeDTO.getId());
+            } else {
+                Housekeeper h = Housekeeper.builder()
+                        .employeeId(employeeDTO.getId())
+                        .name(employeeDTO.getName())
+                        .price(BigDecimal.ZERO)
+                        .rating(BigDecimal.ZERO)
+                        .rank(0)
+                        .carousel("")
+                        .review("")
+                        .build();
+                try {
+                    housekeeperMapper.insert(h);
+                    clearHousekeeperCache();
+                    log.info("员工角色变更为家政员，已创建家政员记录，employeeId={}", employeeDTO.getId());
+                } catch (DuplicateKeyException e) {
+                    // 唯一索引兜底：并发请求已经插入过，忽略本次重复插入
+                    log.warn("家政员档案已被并发请求创建，跳过重复插入，employeeId={}", employeeDTO.getId());
+                }
+            }
         }
         // 角色变更：cleaner → 不是cleaner，删除家政员记录
         if ("cleaner".equals(oldRole) && !"cleaner".equals(newRole)) {

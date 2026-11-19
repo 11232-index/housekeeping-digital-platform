@@ -1,6 +1,6 @@
 <wxs module="util">
 var getStatusText = function(status) {
-  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '待退款', '已取消'];
   return map[status] || '未知';
 };
 var getStatusClass = function(status) {
@@ -23,9 +23,10 @@ var firstReq = function(list) {
 module.exports = { getStatusText: getStatusText, getStatusClass: getStatusClass, orderTitle: orderTitle, firstReq: firstReq };
 </wxs>
 <view class="history-page">
-  <view class="tab-bar">
+  <!-- 状态 tab 有 8 个，窄屏放不下，改成横向滚动 -->
+  <scroll-view class="tab-bar" scroll-x="true" scroll-with-animation="true">
     <text wx:for="{{tabs}}" wx:key="*this" class="tab-item {{tabIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="changeTab">{{item}}</text>
-  </view>
+  </scroll-view>
   <scroll-view class="order-list" scroll-y="true" bindscrolltolower="loadMore">
     <block wx:if="{{orderList.length > 0}}">
       <view wx:for="{{orderList}}" wx:key="id" class="order-card">

@@ -10,6 +10,7 @@
     "pages/appointment/appointment",
     "pages/details/index",
     "pages/booking/booking",
+    "pages/smart-search/smart-search",
     "pages/cart/cart",
     "pages/order/index",
     "pages/pay/index",
@@ -20,11 +21,16 @@
     "pages/my/my",
     "pages/addOrEditAddress/addOrEditAddress",
     "pages/historyOrder/historyOrder",
+    "pages/myVoucher/myVoucher",
+    "pages/myNotify/myNotify",
     "pages/cancel-reason/index",
     "pages/workerLogin/workerLogin",
     "pages/workerHome/workerHome",
     "pages/workerOrder/workerOrder",
-    "pages/workerProfile/workerProfile"
+    "pages/workerOrderDetail/workerOrderDetail",
+    "pages/workerReject/workerReject",
+    "pages/workerProfile/workerProfile",
+    "pages/customer-service/customer-service"
   ],
   "subPackages": [],
   "window": {

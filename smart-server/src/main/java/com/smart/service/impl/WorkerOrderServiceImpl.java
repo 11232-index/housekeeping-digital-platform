@@ -3,6 +3,7 @@ package com.smart.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.smart.constant.MessageConstant;
+import com.smart.constant.OrderEventConstant;
 import com.smart.dto.WorkerOrderPageQueryDTO;
 import com.smart.entity.Housekeeper;
 import com.smart.entity.Order;
@@ -10,6 +11,7 @@ import com.smart.exception.BaseException;
 import com.smart.mapper.HousekeeperMapper;
 import com.smart.mapper.OrderDetailMapper;
 import com.smart.mapper.OrderMapper;
+import com.smart.mq.OrderEventPublisher;
 import com.smart.service.HousekeeperScheduleService;
 import com.smart.service.OrderNotifyService;
 import com.smart.service.UserNotifyService;
@@ -74,6 +76,9 @@ public class WorkerOrderServiceImpl implements WorkerOrderService {
     @Autowired
     private UserNotifyService userNotifyService;
 
+    @Autowired
+    private OrderEventPublisher orderEventPublisher;
+
     @Override
     public Page<WorkerOrderVO> pageQuery(Long employeeId, WorkerOrderPageQueryDTO dto) {
         Long housekeeperId = requireHousekeeperId(employeeId);
@@ -125,18 +130,12 @@ public class WorkerOrderServiceImpl implements WorkerOrderService {
             throw new BaseException(stateChangedMessage(orderId));
         }
 
-        // 通知员工端：家政员已接单
+        // 通知由 MQ 消费者统一处理
         Order order = orderMapper.getById(orderId);
         if (order != null) {
-            orderNotifyService.push("accept", "家政员已接单",
-                    "订单 " + order.getNumber() + " 家政员已接单，预计到达 "
-                            + estimated.format(ARRIVAL_FORMATTER),
-                    orderId, order.getNumber(), order.getAmount());
-            // 同时给下单用户记一条站内消息
-            userNotifyService.push(order.getUserId(), "accepted", "家政员已接单",
-                    "您的订单 " + order.getNumber() + " 已被接单，预计到达 "
-                            + estimated.format(ARRIVAL_FORMATTER),
-                    orderId, order.getNumber());
+            order.setStatus(Order.STATUS_ACCEPTED);
+            orderEventPublisher.publish(OrderEventConstant.ACCEPTED, order,
+                    employeeId, null, estimated, "worker");
         }
         log.info("家政员接单成功：employeeId={}, housekeeperId={}, orderId={}, 预计到达={}",
                 employeeId, housekeeperId, orderId, estimated);
@@ -154,12 +153,11 @@ public class WorkerOrderServiceImpl implements WorkerOrderService {
             throw new BaseException(stateChangedMessage(orderId));
         }
         log.info("家政员确认到达，订单转入服务中：employeeId={}, orderId={}", employeeId, orderId);
-        // 通知下单用户：家政员已到达（这类是体验加分项，发失败也不影响主流程）
+        // 通知由 MQ 消费者统一处理
         Order order = orderMapper.getById(orderId);
         if (order != null) {
-            userNotifyService.push(order.getUserId(), "inService", "家政员已到达",
-                    "您的订单 " + order.getNumber() + " 家政员已到达，开始服务",
-                    orderId, order.getNumber());
+            order.setStatus(Order.STATUS_IN_SERVICE);
+            orderEventPublisher.publish(OrderEventConstant.ARRIVED, order, employeeId, null, null, "worker");
         }
     }
 
@@ -174,12 +172,11 @@ public class WorkerOrderServiceImpl implements WorkerOrderService {
             throw new BaseException(stateChangedMessage(orderId));
         }
         log.info("家政员完成服务：employeeId={}, orderId={}", employeeId, orderId);
-        // 通知下单用户：服务已完成
+        // 通知由 MQ 消费者统一处理
         Order order = orderMapper.getById(orderId);
         if (order != null) {
-            userNotifyService.push(order.getUserId(), "completed", "服务已完成",
-                    "您的订单 " + order.getNumber() + " 已完成，感谢您的使用",
-                    orderId, order.getNumber());
+            order.setStatus(Order.STATUS_COMPLETED);
+            orderEventPublisher.publish(OrderEventConstant.COMPLETED, order, employeeId, null, null, "worker");
         }
     }
 
@@ -237,14 +234,9 @@ public class WorkerOrderServiceImpl implements WorkerOrderService {
         }
 
         // 同样【不释放】预约时段：家政员都做不了了，放回「可约」只会让别的用户再约到
-        // 通知员工端：需要及时处理退款
-        orderNotifyService.push("refund", "家政员无法服务",
-                "订单 " + order.getNumber() + " 家政员报告无法服务：" + trimmed + "，请及时处理退款",
-                orderId, order.getNumber(), order.getAmount());
-        // 同时通知下单用户（涉及退款，必须让用户知道）
-        userNotifyService.push(order.getUserId(), "cannotServe", "服务无法继续",
-                "您的订单 " + order.getNumber() + " 因「" + trimmed + "」无法继续，将为您处理退款",
-                orderId, order.getNumber());
+        // 通知由 MQ 消费者统一处理
+        order.setStatus(Order.STATUS_REFUNDING);
+        orderEventPublisher.publish(OrderEventConstant.CANCELLED, order, employeeId, trimmed, null, "worker");
         log.info("家政员上报无法服务，订单转入待退款：orderId={}, reason={}", orderId, trimmed);
     }
 

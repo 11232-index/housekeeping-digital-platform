@@ -1,4 +1,19 @@
-.stub-page{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5}
-.stub-icon{font-size:100rpx;margin-bottom:30rpx}
-.stub-title{font-size:36rpx;font-weight:bold;color:#333}
-.stub-desc{font-size:26rpx;color:#999;margin-top:16rpx}
+.wprof-page{min-height:100vh;background:#f5f5f5;padding-bottom:40rpx}
+.wprof-loading{text-align:center;color:#999;font-size:28rpx;padding-top:200rpx}
+.wprof-header{display:flex;align-items:center;background:linear-gradient(135deg,#1976d2,#42a5f5);padding:50rpx 30rpx}
+.wprof-avatar{width:140rpx;height:140rpx;border-radius:50%;border:4rpx solid rgba(255,255,255,.5);background:#fff;flex-shrink:0}
+.wprof-avatar-empty{display:flex;align-items:center;justify-content:center;font-size:64rpx;color:#c8c8c8}
+.wprof-head-info{margin-left:30rpx;flex:1;min-width:0}
+.wprof-name{display:block;font-size:38rpx;font-weight:bold;color:#fff}
+.wprof-position{display:block;font-size:26rpx;color:rgba(255,255,255,.85);margin-top:10rpx;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wprof-card{background:#fff;border-radius:16rpx;margin:24rpx 20rpx 0;padding:10rpx 24rpx 16rpx}
+.wprof-card-title{font-size:30rpx;font-weight:bold;color:#1976d2;background:#e3f2fd;border-radius:8rpx;padding:10rpx 16rpx;margin:16rpx 0 6rpx}
+.info-row{display:flex;justify-content:space-between;padding:16rpx 0;border-bottom:1rpx solid #f5f5f5;font-size:26rpx}
+.info-label{color:#999;min-width:160rpx;flex-shrink:0}
+.wprof-empty{text-align:center;color:#bbb;font-size:26rpx;padding:30rpx 0}
+/* 排班：星期 + 该天的时段标签 */
+.wprof-sch-row{display:flex;align-items:flex-start;padding:16rpx 0;border-bottom:1rpx solid #f5f5f5}
+.wprof-sch-day{color:#666;font-size:26rpx;min-width:110rpx;flex-shrink:0;line-height:48rpx}
+.wprof-sch-slots{flex:1;display:flex;flex-wrap:wrap;gap:10rpx}
+.wprof-sch-slot{font-size:24rpx;color:#1976d2;background:#e3f2fd;border-radius:32rpx;padding:8rpx 22rpx}
+.wprof-tip{text-align:center;color:#bbb;font-size:22rpx;margin-top:30rpx;line-height:1.6;padding:0 40rpx}

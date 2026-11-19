@@ -3,6 +3,7 @@
 .status-card{text-align:center}
 .status-title{font-size:36rpx;font-weight:bold;color:#333;margin-bottom:10rpx}
 .status-time{font-size:26rpx;color:#e94e3c;margin-bottom:20rpx}
+.countdown-num{font-size:30rpx;font-weight:bold;color:#e94e3c}
 .status-actions{display:flex;justify-content:center;gap:20rpx;margin-top:20rpx}
 .status-actions .btn{height:60rpx;padding:0 30rpx;font-size:26rpx}
 .shop-name{font-size:30rpx;font-weight:bold;color:#333;padding-bottom:20rpx;border-bottom:1rpx solid #f0f0f0}
@@ -21,6 +22,10 @@
 .order-summary{padding-top:20rpx;border-top:1rpx solid #f0f0f0;margin-top:10rpx}
 .summary-row{display:flex;justify-content:space-between;font-size:30rpx;font-weight:bold}
 .summary-price{color:#e94e3c}
+/* 优惠券相关行：比合计行轻一些，避免抢主金额的视觉重心 */
+.summary-sub{font-size:26rpx;font-weight:normal;color:#999;margin-bottom:8rpx}
+.summary-voucher{color:#333}
+.summary-discount{color:#e94e3c}
 .info-row{display:flex;justify-content:space-between;padding:16rpx 0;border-bottom:1rpx solid #f5f5f5;font-size:26rpx}
 .info-label{color:#999;min-width:160rpx}
 .contact-card{text-align:center;color:#1976d2;font-size:30rpx}

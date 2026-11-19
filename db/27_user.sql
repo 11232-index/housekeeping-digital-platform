@@ -10,4 +10,4 @@ CREATE TABLE `user` (
   `create_time` datetime DEFAULT NULL COMMENT '注册时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_openid` (`openid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2358 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=2358 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='用户表';

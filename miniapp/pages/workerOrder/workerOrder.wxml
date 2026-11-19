@@ -1,5 +1,85 @@
-<view class="stub-page">
-  <text class="stub-icon">📋</text>
-  <text class="stub-title">订单管理</text>
-  <text class="stub-desc">功能开发中，敬请期待</text>
+<wxs module="wo">
+var statusText = function(s) {
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '待退款', '已取消'];
+  return map[s] || '未知';
+};
+var orderTitle = function(list) {
+  if (!list || list.length === 0) return '--';
+  if (list.length === 1) return list[0].name;
+  return list[0].name + ' 等' + list.length + '项';
+};
+module.exports = { statusText: statusText, orderTitle: orderTitle };
+</wxs>
+
+<view class="wo-page">
+  <!-- 状态 tab -->
+  <view class="wo-tabs">
+    <view wx:for="{{tabs}}" wx:key="*this"
+          class="wo-tab {{tabIndex === index ? 'active' : ''}}"
+          data-index="{{index}}" bindtap="changeTab">
+      {{item}}
+      <text wx:if="{{index === 0 && pendingCount > 0}}" class="wo-tab-badge">{{pendingCount > 99 ? '99+' : pendingCount}}</text>
+    </view>
+  </view>
+
+  <scroll-view class="wo-list" scroll-y="true" bindscrolltolower="loadMore">
+    <block wx:if="{{orderList.length > 0}}">
+      <view wx:for="{{orderList}}" wx:key="id" class="wo-card"
+            data-id="{{item.id}}" bindtap="goDetail">
+        <view class="wo-top">
+          <text class="wo-status wo-status-{{item.status}}">{{wo.statusText(item.status)}}</text>
+          <text class="wo-number">订单号：{{item.number}}</text>
+        </view>
+
+        <view class="wo-body">
+          <text class="wo-name">{{wo.orderTitle(item.orderDetailList)}}</text>
+          <text class="wo-line">预约时间：{{item.scheduleDate}} {{item.scheduleTime}}</text>
+          <text wx:if="{{item.serviceDuration}}" class="wo-line">服务时长：{{item.serviceDuration}}</text>
+          <text class="wo-line">联系人：{{item.contactName || '--'}} {{item.phone || ''}}</text>
+          <text class="wo-line">上门地址：{{item.address || '--'}}</text>
+          <text wx:if="{{item.remark}}" class="wo-line">备注：{{item.remark}}</text>
+          <text wx:if="{{item.status === 2 && item.cancelReason}}" class="wo-line wo-line-warn">上次不接单原因：{{item.cancelReason}}</text>
+          <text class="wo-more">查看详情 ></text>
+        </view>
+
+        <view wx:if="{{item.status === 2 || item.status === 3 || item.status === 4}}" class="wo-actions">
+          <block wx:if="{{item.status === 2}}">
+            <view class="wo-btn wo-btn-reject" data-id="{{item.id}}" catchtap="rejectOrder">不接单</view>
+            <view class="wo-btn wo-btn-accept" data-id="{{item.id}}" catchtap="openAccept">接单</view>
+          </block>
+          <block wx:elif="{{item.status === 3}}">
+            <view class="wo-btn wo-btn-reject" data-id="{{item.id}}" catchtap="cannotServe">无法服务</view>
+            <view class="wo-btn wo-btn-accept" data-id="{{item.id}}" catchtap="arriveOrder">确认到达</view>
+          </block>
+          <block wx:elif="{{item.status === 4}}">
+            <view class="wo-btn wo-btn-reject" data-id="{{item.id}}" catchtap="cannotServe">无法服务</view>
+            <view class="wo-btn wo-btn-accept" data-id="{{item.id}}" catchtap="completeOrder">完成服务</view>
+          </block>
+        </view>
+      </view>
+    </block>
+
+    <view wx:if="{{!loading && orderList.length === 0}}" class="wo-empty">暂无订单</view>
+    <view wx:if="{{loading}}" class="wo-loading">加载中...</view>
+    <view wx:if="{{!hasMore && orderList.length > 0}}" class="wo-nomore">没有更多了</view>
+  </scroll-view>
+
+  <!-- 接单弹层：填写预计到达时间 -->
+  <view wx:if="{{acceptVisible}}" class="wo-mask" bindtap="closeAccept">
+    <view class="wo-modal" catchtap="noop">
+      <view class="wo-modal-title">填写预计到达时间</view>
+      <view class="wo-modal-pickers">
+        <picker mode="date" value="{{acceptDate}}" start="{{today}}" bindchange="onAcceptDate">
+          <view class="wo-picker">{{acceptDate || '选择日期'}}</view>
+        </picker>
+        <picker mode="time" value="{{acceptTime}}" bindchange="onAcceptTime">
+          <view class="wo-picker">{{acceptTime || '选择时间'}}</view>
+        </picker>
+      </view>
+      <view class="wo-modal-footer">
+        <view class="wo-btn wo-btn-reject" bindtap="closeAccept">取消</view>
+        <view class="wo-btn wo-btn-accept" bindtap="confirmAccept">确认接单</view>
+      </view>
+    </view>
+  </view>
 </view>

@@ -9,7 +9,8 @@
         <text class="whome-name">{{workerInfo.name || '家政员'}}</text>
         <text class="whome-tag">家政员</text>
       </view>
-      <text class="whome-id">员工号：{{workerInfo.employeeId || '--'}}</text>
+      <text class="whome-id">岗位：{{workerInfo.position || '--'}}</text>
+      <text class="whome-id">手机号：{{workerInfo.phone || '--'}}</text>
     </view>
   </view>
 
@@ -18,7 +19,10 @@
     <view class="module-card" bindtap="goOrder">
       <text class="module-icon">📋</text>
       <view class="module-info">
-        <text class="module-name">订单管理</text>
+        <view class="module-name-row">
+          <text class="module-name">订单管理</text>
+          <text wx:if="{{pendingCount > 0}}" class="module-badge">{{pendingCount > 99 ? '99+' : pendingCount}}</text>
+        </view>
         <text class="module-desc">查看/处理分配给我的服务订单</text>
       </view>
       <text class="module-arrow">></text>
@@ -27,7 +31,7 @@
       <text class="module-icon">👤</text>
       <view class="module-info">
         <text class="module-name">个人中心</text>
-        <text class="module-desc">我的资料、排班与设置</text>
+        <text class="module-desc">我的资料、排班与可预约时段</text>
       </view>
       <text class="module-arrow">></text>
     </view>

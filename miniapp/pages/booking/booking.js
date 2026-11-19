@@ -43,6 +43,11 @@ Page({
     }
   },
 
+  // 跳转智能搜索
+  goSmartSearch: function() {
+    wx.navigateTo({ url: '/pages/smart-search/smart-search' });
+  },
+
   onShow: function() {
 wx.hideTabBar();
     if (!this.checkLogin()) return;

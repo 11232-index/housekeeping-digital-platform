@@ -48,6 +48,8 @@ public class UserController {
         // 生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.USER_ID, user.getId());
+        // AI 记忆服务需要 openid 作为用户级记忆的 key（token 由服务端签发，客户端无法伪造）
+        claims.put("openid", user.getOpenid());
         String token = JwtUtil.createJWT(
                 jwtProperties.getUserSecretKey(),
                 jwtProperties.getUserTtl(),

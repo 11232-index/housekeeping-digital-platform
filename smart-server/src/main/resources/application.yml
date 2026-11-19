@@ -10,6 +10,13 @@ spring:
     # 连接库号统一到 db 10：与 Redisson 锁（smart.redis.database=10）及业务约定保持一致，
     # 避免缓存/领取记录(claim:*)与分布式锁散落在不同库、排查时两头找
     database: 10
+  rabbitmq:
+    listener:
+      simple:
+        # 手动 ack：消费成功后才确认，失败进死信队列
+        acknowledge-mode: manual
+        default-requeue-rejected: false
+        prefetch: 20
   servlet:
     multipart:
       max-file-size: 50MB

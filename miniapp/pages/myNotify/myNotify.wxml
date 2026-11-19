@@ -1,0 +1,20 @@
+<view class="mn-page">
+  <block wx:if="{{list.length > 0}}">
+    <view class="mn-head">
+      <text class="mn-head-tip">共 {{list.length}} 条消息</text>
+      <text class="mn-head-btn" bindtap="markAllRead">全部已读</text>
+    </view>
+    <view wx:for="{{list}}" wx:key="id"
+          class="mn-card {{item.read ? '' : 'unread'}}"
+          data-index="{{index}}" bindtap="onTapItem">
+      <view class="mn-top">
+        <text class="mn-title">{{item.read ? '' : '● '}}{{item.title}}</text>
+        <text class="mn-time">{{item.createTime}}</text>
+      </view>
+      <text class="mn-content">{{item.content}}</text>
+    </view>
+  </block>
+
+  <view wx:if="{{loading}}" class="mn-loading">加载中...</view>
+  <view wx:if="{{!loading && list.length === 0}}" class="mn-empty">暂无消息</view>
+</view>

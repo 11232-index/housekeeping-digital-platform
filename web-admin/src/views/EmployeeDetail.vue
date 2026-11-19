@@ -133,6 +133,57 @@
               </el-select>
             </el-form-item>
 
+            <!-- 排班：每个星期几各自配一条或多条时段 -->
+            <el-form-item label="排班">
+              <div class="schedule-editor">
+                <div class="schedule-days">
+                  <span class="schedule-tip">勾选需要排班的星期：</span>
+                  <el-checkbox-group v-model="form.scheduleDays">
+                    <el-checkbox-button v-for="d in WEEK_DAYS" :key="d.value" :value="d.value">
+                      {{ d.label }}
+                    </el-checkbox-button>
+                  </el-checkbox-group>
+                </div>
+
+                <div v-for="day in selectedDays" :key="day" class="schedule-day-block">
+                  <span class="schedule-day-label">{{ weekLabel(day) }}</span>
+                  <div class="schedule-slots">
+                    <div v-for="(slot, i) in form.scheduleMap[day]" :key="i" class="entry-row">
+                      <el-time-picker
+                        v-model="slot.start"
+                        placeholder="开始"
+                        format="HH:mm"
+                        value-format="HH:mm"
+                        style="width: 130px"
+                      />
+                      <span style="color: #909399; margin: 0 4px">~</span>
+                      <el-time-picker
+                        v-model="slot.end"
+                        placeholder="结束"
+                        format="HH:mm"
+                        value-format="HH:mm"
+                        style="width: 130px"
+                      />
+                      <el-button
+                        v-if="form.scheduleMap[day].length > 1"
+                        size="small"
+                        type="danger"
+                        link
+                        @click="removeScheduleSlot(day, i)"
+                      >
+                        删除
+                      </el-button>
+                    </div>
+                    <el-button size="small" type="primary" plain @click="addScheduleSlot(day)">
+                      + 添加时段
+                    </el-button>
+                  </div>
+                </div>
+
+                <div v-if="schedulePreview" class="entry-preview">预览：{{ schedulePreview }}</div>
+              </div>
+            </el-form-item>
+
             <!-- 合同文件 -->
             <el-form-item label="合同文件">
               <div class="file-upload">
@@ -194,7 +245,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadFile } from 'element-plus'
@@ -255,12 +306,26 @@ const saving = ref(false)
 const deleting = ref(false)
 const detailExists = ref(false)
 
+// 周一~周日（1=周一 … 7=周日，与入库 JSON 的 days 一致）
+const WEEK_DAYS = [
+  { value: 1, label: '周一' },
+  { value: 2, label: '周二' },
+  { value: 3, label: '周三' },
+  { value: 4, label: '周四' },
+  { value: 5, label: '周五' },
+  { value: 6, label: '周六' },
+  { value: 7, label: '周日' }
+]
+
 const form = reactive({
   educationList: [] as { degree: string; school: string }[],
   experienceList: [] as { dateRange: string[]; description: string }[],
   position: '',
   salary: '',
   workStatus: '',
+  // 排班：勾选的星期 + 每个星期各自的一组时段
+  scheduleDays: [] as number[],
+  scheduleMap: {} as Record<number, { start: string; end: string }[]>,
   contract: '',
   healthCertificate: '',
   updateTime: ''
@@ -289,6 +354,33 @@ const loadDetail = async (employeeId: number) => {
         try {
           form.experienceList = JSON.parse(detail.pastExperience)
         } catch { form.experienceList = [] }
+      }
+      // 解析排班JSON：{"1":[{"start":"09:00","end":"11:00"}], "3":[...]}
+      // 空值或格式损坏都回落到空白，不阻塞页面
+      form.scheduleDays = []
+      form.scheduleMap = {}
+      if (detail.schedule) {
+        try {
+          const sch = JSON.parse(detail.schedule)
+          Object.keys(sch || {}).forEach((key) => {
+            const day = Number(key)
+            const slots = sch[key]
+            if (
+              Number.isInteger(day) && day >= 1 && day <= 7 &&
+              Array.isArray(slots) && slots.length > 0
+            ) {
+              form.scheduleDays.push(day)
+              form.scheduleMap[day] = slots.map((s: any) => ({
+                start: (s && s.start) || '',
+                end: (s && s.end) || ''
+              }))
+            }
+          })
+          form.scheduleDays.sort((a, b) => a - b)
+        } catch {
+          form.scheduleDays = []
+          form.scheduleMap = {}
+        }
       }
       form.position = detail.position || ''
       form.salary = detail.salary || ''
@@ -320,6 +412,8 @@ const resetForm = () => {
   form.position = ''
   form.salary = ''
   form.workStatus = ''
+  form.scheduleDays = []
+  form.scheduleMap = {}
   form.contract = ''
   form.healthCertificate = ''
   form.updateTime = ''
@@ -343,6 +437,49 @@ const addExperience = () => {
 const removeExperience = (index: number) => {
   form.experienceList.splice(index, 1)
 }
+
+// ========== 排班 ==========
+// 入库结构：{"1":[{"start":"09:00","end":"11:00"}], "3":[{"start":"14:00","end":"16:00"}]}
+// key 是星期（1=周一 … 7=周日），value 是该天自己的时段列表；没有 key 的天表示不排班
+
+// 已勾选的星期，升序
+const selectedDays = computed(() => [...form.scheduleDays].sort((a, b) => a - b))
+
+const weekLabel = (day: number) => WEEK_DAYS[day - 1]?.label || ''
+
+// 勾上某天后，给它一个空的时段行；取消勾选后不清 map，重新勾选能恢复已填内容
+watch(
+  () => [...form.scheduleDays],
+  (days: number[]) => {
+    for (const d of days) {
+      if (!form.scheduleMap[d] || form.scheduleMap[d].length === 0) {
+        form.scheduleMap[d] = [{ start: '', end: '' }]
+      }
+    }
+  }
+)
+
+const addScheduleSlot = (day: number) => {
+  form.scheduleMap[day].push({ start: '', end: '' })
+}
+const removeScheduleSlot = (day: number, index: number) => {
+  form.scheduleMap[day].splice(index, 1)
+}
+
+// 某天里起止都填了的时段
+const validSlotsOf = (day: number) =>
+  (form.scheduleMap[day] || []).filter((s) => s.start && s.end)
+
+// 实时预览："周一 09:00-11:00；周三 14:00-16:00、18:00-20:00"
+const schedulePreview = computed(() => {
+  const parts: string[] = []
+  for (const d of selectedDays.value) {
+    const slots = validSlotsOf(d)
+    if (slots.length === 0) continue
+    parts.push(`${weekLabel(d)} ${slots.map((s) => `${s.start}-${s.end}`).join('、')}`)
+  }
+  return parts.join('；')
+})
 
 // 文件上传
 const pendingFiles = reactive<Record<string, File | null>>({})
@@ -414,6 +551,30 @@ const handleSave = async () => {
       await uploadPendingFile('healthCertificate')
     }
 
+    // 排班校验：勾选的每一天至少要有一个完整时段，且每段结束要晚于开始
+    for (const d of selectedDays.value) {
+      const slots = validSlotsOf(d)
+      if (slots.length === 0) {
+        ElMessage.warning(`已勾选${weekLabel(d)}，请至少填写一个完整时段（开始和结束）`)
+        return
+      }
+      for (const s of slots) {
+        if (s.start >= s.end) {
+          ElMessage.warning(`${weekLabel(d)} 的时段 ${s.start}-${s.end} 不合法：结束时间必须晚于开始时间`)
+          return
+        }
+      }
+    }
+
+    // 组装排班 JSON：只为填好时段的星期写入 key
+    const scheduleJson: Record<string, { start: string; end: string }[]> = {}
+    for (const d of selectedDays.value) {
+      const slots = validSlotsOf(d)
+      if (slots.length > 0) {
+        scheduleJson[String(d)] = slots.map((s) => ({ start: s.start, end: s.end }))
+      }
+    }
+
     const data: EmployeeDetail = {
       employeeId: selectedEmployeeId.value,
       education: form.educationList.length > 0 ? JSON.stringify(form.educationList) : '',
@@ -421,6 +582,8 @@ const handleSave = async () => {
       position: form.position,
       salary: form.salary,
       workStatus: form.workStatus,
+      // 无排班时存空字符串（不是 null），保证清空后能落库 —— 后端 XML 是 <if test="schedule != null">
+      schedule: Object.keys(scheduleJson).length > 0 ? JSON.stringify(scheduleJson) : '',
       contract: form.contract,
       healthCertificate: form.healthCertificate
     }
@@ -642,6 +805,56 @@ onMounted(() => {
   font-size: 13px;
   color: #409eff;
   white-space: nowrap;
+}
+
+/* 排班编辑器 */
+.schedule-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-days {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.schedule-slots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.schedule-tip {
+  font-size: 13px;
+  color: #909399;
+}
+
+/* 单个星期几的时段编辑块 */
+.schedule-day-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.schedule-day-label {
+  flex-shrink: 0;
+  width: 44px;
+  font-size: 13px;
+  color: #606266;
+  line-height: 32px;
+}
+
+/* 排班预览可能很长，允许换行，覆盖 .entry-preview 的 nowrap */
+.schedule-slots .entry-preview {
+  white-space: normal;
 }
 
 .file-upload {

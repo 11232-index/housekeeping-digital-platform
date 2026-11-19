@@ -163,6 +163,12 @@ export interface EmployeeDetail {
   position?: string
   salary?: string
   workStatus?: string
+  /**
+   * 排班（JSON）：key 是星期（1=周一 … 7=周日），value 是该天自己的时段列表
+   * 例：{"1":[{"start":"09:00","end":"11:00"}],"3":[{"start":"14:00","end":"16:00"}]}
+   * 没有 key 的星期表示不排班；无排班时为空字符串
+   */
+  schedule?: string
   contract?: string
   healthCertificate?: string
   updateTime?: string

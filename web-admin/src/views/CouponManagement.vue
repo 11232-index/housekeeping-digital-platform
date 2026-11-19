@@ -56,7 +56,8 @@
         <template #default="{ row }">
           <el-button link type="primary" @click="handleEdit(row)">修改</el-button>
           <el-dropdown trigger="click" @command="(cmd: any) => handleChangeStatus(row, cmd)" class="status-dropdown">
-            <el-button link type="warning">{{ statusText(row.status) }}<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+            <!-- 按钮颜色跟着当前状态走（与「状态」列保持同一套配色），上架绿、下架灰、过期红 -->
+            <el-button link :type="statusTagType(row.status)">{{ statusText(row.status) }}<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="1" :disabled="row.status === 1">上架</el-dropdown-item>

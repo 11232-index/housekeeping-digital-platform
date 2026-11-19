@@ -23,3 +23,6 @@ db/backup/
 dump.rdb
 project.private.config.json
 *.local
+# 前端本地备份/编辑器目录
+*.bak-*
+**/.vscode/

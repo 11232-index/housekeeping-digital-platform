@@ -17,4 +17,4 @@ CREATE TABLE `tb_user_voucher` (
   KEY `idx_order` (`order_id`),
   -- 按券统计"已发份数"（对账任务、懒预热）以及 voucher_id 单列查询
   KEY `idx_voucher` (`voucher_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户优惠券（领取与使用记录）';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='用户优惠券（领取与使用记录）';

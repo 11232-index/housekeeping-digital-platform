@@ -1,4 +1,44 @@
-.stub-page{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5}
-.stub-icon{font-size:100rpx;margin-bottom:30rpx}
-.stub-title{font-size:36rpx;font-weight:bold;color:#333}
-.stub-desc{font-size:26rpx;color:#999;margin-top:16rpx}
+.wo-page{display:flex;flex-direction:column;height:100vh;background:#f5f5f5}
+
+/* 状态 tab */
+.wo-tabs{display:flex;background:#fff;border-bottom:1rpx solid #f0f0f0}
+.wo-tab{flex:1;text-align:center;padding:24rpx 0;font-size:28rpx;color:#666;position:relative}
+.wo-tab.active{color:#1976d2;font-weight:bold}
+.wo-tab.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60rpx;height:4rpx;background:#1976d2;border-radius:2rpx}
+.wo-tab-badge{position:absolute;top:8rpx;right:16rpx;min-width:32rpx;height:32rpx;line-height:32rpx;padding:0 8rpx;border-radius:16rpx;background:#e94e3c;color:#fff;font-size:20rpx;font-weight:normal}
+
+/* 列表 */
+.wo-list{flex:1;padding:20rpx;box-sizing:border-box}
+.wo-card{background:#fff;border-radius:16rpx;padding:24rpx;margin-bottom:20rpx}
+.wo-top{display:flex;align-items:center;padding-bottom:16rpx;border-bottom:1rpx solid #f5f5f5}
+.wo-status{font-size:22rpx;padding:4rpx 16rpx;border-radius:6rpx;margin-right:16rpx;flex-shrink:0;background:#f5f5f5;color:#999}
+.wo-status-2{background:#e3f2fd;color:#1565c0}
+.wo-status-3{background:#e8f5e9;color:#2e7d32}
+.wo-status-4{background:#fff3e0;color:#e65100}
+.wo-status-5{background:#f3e5f5;color:#7b1fa2}
+.wo-status-6{background:#fff3e0;color:#e65100}
+.wo-number{font-size:24rpx;color:#999;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.wo-body{display:flex;flex-direction:column;padding-top:16rpx}
+.wo-name{font-size:30rpx;color:#333;font-weight:bold;margin-bottom:12rpx}
+.wo-line{font-size:26rpx;color:#666;line-height:44rpx}
+.wo-line-warn{color:#e65100}
+
+.wo-actions{display:flex;gap:20rpx;margin-top:24rpx;padding-top:20rpx;border-top:1rpx solid #f5f5f5}
+.wo-btn{flex:1;height:76rpx;line-height:76rpx;text-align:center;border-radius:38rpx;font-size:28rpx;font-weight:bold}
+.wo-btn-reject{background:#fff;color:#666;border:2rpx solid #ddd}
+.wo-btn-accept{background:#1976d2;color:#fff}
+
+.wo-more{font-size:24rpx;color:#1976d2;margin-top:12rpx}
+
+/* 接单弹层 */
+.wo-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100}
+.wo-modal{width:600rpx;background:#fff;border-radius:20rpx;padding:40rpx 32rpx 32rpx}
+.wo-modal-title{font-size:32rpx;font-weight:bold;color:#333;text-align:center;margin-bottom:32rpx}
+.wo-modal-pickers{display:flex;gap:20rpx;margin-bottom:40rpx}
+.wo-picker{height:88rpx;line-height:88rpx;text-align:center;background:#f5f5f5;border-radius:12rpx;font-size:28rpx;color:#333;flex:1}
+.wo-modal-footer{display:flex;gap:20rpx}
+
+.wo-empty{text-align:center;color:#999;font-size:28rpx;padding:120rpx 0}
+.wo-loading{text-align:center;color:#999;font-size:26rpx;padding:30rpx 0}
+.wo-nomore{text-align:center;color:#bbb;font-size:24rpx;padding:30rpx 0}

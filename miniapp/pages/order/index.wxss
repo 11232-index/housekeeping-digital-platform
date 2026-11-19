@@ -74,3 +74,18 @@
 .spec-pop-footer{display:flex;align-items:center;justify-content:center;padding:20rpx 32rpx 0;border-top:1rpx solid #f0f0f0;margin-top:12rpx}
 .spec-confirm-btn{padding:16rpx 80rpx;background:#1976d2;color:#fff;border-radius:40rpx;font-size:28rpx;font-weight:bold}
 .spec-close{position:absolute;top:20rpx;right:20rpx;width:48rpx;height:48rpx;line-height:48rpx;text-align:center;font-size:32rpx;color:#999;border-radius:50%;background:#f5f5f5}
+
+/* 优惠券 */
+.voucher-clear{font-size:26rpx;color:#bbb;padding:0 16rpx}
+.value-highlight{color:#e94e3c}
+.price-discount{font-size:22rpx;color:#ffe0e0;margin-left:12rpx}
+.voucher-pop-body{max-height:50vh}
+.voucher-item{display:flex;align-items:stretch;border-radius:12rpx;overflow:hidden;margin-bottom:20rpx;border:2rpx solid transparent;background:#f5f5f5}
+.voucher-item.active{border-color:#e94e3c;background:#fff5f4}
+.voucher-item-left{width:150rpx;flex-shrink:0;background:#e94e3c;color:#fff;display:flex;align-items:center;justify-content:center}
+.voucher-item-discount{font-size:32rpx;font-weight:bold}
+.voucher-item-right{flex:1;padding:20rpx;display:flex;flex-direction:column;justify-content:center}
+.voucher-item-title{font-size:28rpx;color:#333;font-weight:bold}
+.voucher-item-sub{font-size:24rpx;color:#999;margin-top:6rpx}
+.voucher-empty{text-align:center;color:#999;font-size:26rpx;padding:60rpx 0}
+.voucher-none{text-align:center;color:#1976d2;font-size:28rpx;padding:26rpx 0 10rpx}

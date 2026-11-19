@@ -1,0 +1,12 @@
+.wr-page{min-height:100vh;background:#f5f5f5;padding:20rpx}
+.wr-section{background:#fff;border-radius:16rpx;padding:24rpx;margin-bottom:20rpx}
+.wr-title{font-size:28rpx;color:#333;margin-bottom:20rpx}
+.wr-tags{display:flex;flex-wrap:wrap;gap:16rpx}
+.wr-tag{padding:16rpx 28rpx;border-radius:32rpx;background:#f5f5f5;color:#333;font-size:26rpx;border:2rpx solid transparent}
+.wr-tag.active{border-color:#1976d2;color:#1976d2;background:#e3f2fd}
+.wr-textarea{width:100%;height:160rpx;background:#f5f5f5;border-radius:12rpx;padding:16rpx;font-size:26rpx;box-sizing:border-box}
+.wr-tip{font-size:24rpx;color:#999;padding:0 8rpx 20rpx}
+.wr-footer{display:flex;gap:20rpx;padding:20rpx 0}
+.wr-btn{flex:1;height:88rpx;line-height:88rpx;text-align:center;border-radius:44rpx;font-size:30rpx;font-weight:bold}
+.wr-btn-cancel{border:2rpx solid #ddd;color:#666;background:#fff}
+.wr-btn-confirm{background:#e94e3c;color:#fff}

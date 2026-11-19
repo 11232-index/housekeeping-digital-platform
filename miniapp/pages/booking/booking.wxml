@@ -18,6 +18,10 @@
       <input class="search-input" placeholder="搜索服务或服务套餐" value="{{searchKeyword}}" bindinput="onSearchInput" bindconfirm="onSearchConfirm" confirm-type="search" bindfocus="onSearchFocus" bindblur="onSearchBlur" />
       <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="clearSearch">✕</text>
     </view>
+    <view class="smart-entry" bindtap="goSmartSearch">
+      <text class="smart-entry-icon">✨</text>
+      <text>智能搜</text>
+    </view>
   </view>
 
   <!-- 搜索历史 -->
@@ -119,6 +123,10 @@
         <icon type="search" size="16" class="search-icon"></icon>
         <input class="search-input" placeholder="搜索家政员" value="{{hkKeyword}}" bindinput="onHkInput" bindconfirm="onHkSearch" confirm-type="search" />
         <text wx:if="{{hkKeyword}}" class="search-clear" bindtap="onHkClear">✕</text>
+      </view>
+      <view class="smart-entry" bindtap="goSmartSearch">
+        <text class="smart-entry-icon">✨</text>
+        <text>智能搜</text>
       </view>
     </view>
 

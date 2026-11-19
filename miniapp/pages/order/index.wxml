@@ -105,6 +105,15 @@ module.exports = { parseReq: parseReq };
         <text class="arrow-right">></text>
       </view>
     </view>
+    <!-- 是否使用优惠券（只有服务预约能用；家政员预约不显示这一行） -->
+    <view wx:if="{{!hkMode}}" class="form-card card">
+      <view class="form-row form-row-last" bindtap="onPickVoucher">
+        <text class="form-label">使用优惠券</text>
+        <text class="form-value {{selectedVoucher ? 'value-highlight' : ''}}">{{selectedVoucher ? selectedVoucher.title + '（' + selectedVoucher.discountText + '）' : '未使用'}}</text>
+        <text wx:if="{{selectedVoucher}}" class="voucher-clear" catchtap="clearVoucher">✕</text>
+        <text class="arrow-right">></text>
+      </view>
+    </view>
     <!-- 备注 -->
     <view class="order-extra card">
       <view class="extra-item" bindtap="goRemark">
@@ -116,6 +125,7 @@ module.exports = { parseReq: parseReq };
     <view class="footer-price">
       <text wx:if="{{!singleMode}}" class="price-label">合计：</text>
       <text class="price-symbol">¥</text><text class="price-value">{{totalPrice}}</text>
+      <text wx:if="{{selectedVoucher}}" class="price-discount">已优惠 ¥{{discountAmount}}</text>
     </view>
     <view class="footer-btn {{submitting ? 'btn-disabled' : ''}}" bindtap="submitOrder">{{submitting ? '提交中...' : '提交预约信息'}}</view>
   </view>
@@ -148,6 +158,29 @@ module.exports = { parseReq: parseReq };
           </view>
         </view>
       </view>
+    </view>
+  </view>
+  <!-- 优惠券选择弹窗（只列未使用的券，一次只能选一张） -->
+  <view class="pop-mask" wx:if="{{showVoucherPop}}" bindtap="closeVoucherPop">
+    <view class="option-pop" catchtap="stopPropagation">
+      <view class="option-pop-title">选择优惠券</view>
+      <scroll-view class="option-pop-body voucher-pop-body" scroll-y="true">
+        <block wx:if="{{usableVoucherList.length > 0}}">
+          <view wx:for="{{usableVoucherList}}" wx:key="voucherId"
+                class="voucher-item {{selectedVoucher && selectedVoucher.voucherId === item.voucherId ? 'active' : ''}}"
+                data-index="{{index}}" bindtap="onSelectVoucher">
+            <view class="voucher-item-left">
+              <text class="voucher-item-discount">{{item.discountText}}</text>
+            </view>
+            <view class="voucher-item-right">
+              <text class="voucher-item-title">{{item.title}}</text>
+              <text wx:if="{{item.subTitle}}" class="voucher-item-sub">{{item.subTitle}}</text>
+            </view>
+          </view>
+        </block>
+        <view wx:else class="voucher-empty">暂无可用优惠券</view>
+      </scroll-view>
+      <view wx:if="{{selectedVoucher}}" class="voucher-none" bindtap="clearVoucher">不使用优惠券</view>
     </view>
   </view>
   <!-- 需求选择弹窗 -->

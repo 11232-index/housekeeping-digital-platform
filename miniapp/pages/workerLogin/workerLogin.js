@@ -37,7 +37,9 @@ Page({
         employeeId: data.employeeId,
         housekeeperId: data.housekeeperId,
         name: data.name,
-        picture: data.picture
+        picture: data.picture,
+        position: data.position,
+        phone: data.phone
       });
       wx.showToast({ title: '登录成功', icon: 'success' });
       setTimeout(function() {

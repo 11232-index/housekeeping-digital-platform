@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.WorkbenchMapper">
+
+    <!-- 待接单数量（含已指派、等待家政员确认的订单） -->
+    <select id="countOrdersByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM orders WHERE status = #{status}
+    </select>
+
+    <!-- 待指派：待接单且还没有家政员 -->
+    <select id="countPendingAssign" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM orders
+        WHERE status = 2 AND housekeeper_id IS NULL
+    </select>
+
+    <!-- 当日下单数 -->
+    <select id="countOrdersByDate" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM orders
+        WHERE order_time &gt;= #{date}
+          AND order_time &lt; DATE_ADD(#{date}, INTERVAL 1 DAY)
+    </select>
+
+    <!-- 当日营业额：已完成且已支付，按付款日期 -->
+    <select id="sumTurnoverByDate" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0) FROM orders
+        WHERE status = 5
+          AND pay_status = 1
+          AND pay_time &gt;= #{date}
+          AND pay_time &lt; DATE_ADD(#{date}, INTERVAL 1 DAY)
+    </select>
+
+    <!-- 当日有效订单数：已完成且已支付，按付款日期 -->
+    <select id="countValidOrdersByDate" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM orders
+        WHERE status = 5
+          AND pay_status = 1
+          AND pay_time &gt;= #{date}
+          AND pay_time &lt; DATE_ADD(#{date}, INTERVAL 1 DAY)
+    </select>
+
+    <!-- 当日新增用户数 -->
+    <select id="countNewUsersByDate" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM `user`
+        WHERE create_time &gt;= #{date}
+          AND create_time &lt; DATE_ADD(#{date}, INTERVAL 1 DAY)
+    </select>
+
+    <!-- 当日预约时段分布：待接单/已接单/服务中/已完成，排除待付款、退款中、已取消 -->
+    <select id="countAppointmentsBySlot" resultType="com.smart.vo.ScheduleSlotVO">
+        SELECT schedule_time AS `time`,
+               COUNT(*) AS `count`
+        FROM orders
+        WHERE schedule_date = #{date}
+          AND schedule_time IS NOT NULL
+          AND schedule_time &lt;&gt; ''
+          AND status IN (2, 3, 4, 5)
+        GROUP BY schedule_time
+        ORDER BY schedule_time
+    </select>
+
+</mapper>

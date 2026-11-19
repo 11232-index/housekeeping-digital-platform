@@ -1,6 +1,6 @@
 .history-page{min-height:100vh;background:#f5f5f5;padding-bottom:20rpx}
-.tab-bar{display:flex;background:#fff;padding:0 20rpx;border-bottom:1rpx solid #f0f0f0}
-.tab-item{flex:1;text-align:center;padding:24rpx 0;font-size:28rpx;color:#666;position:relative}
+.tab-bar{background:#fff;padding:0 20rpx;border-bottom:1rpx solid #f0f0f0;white-space:nowrap}
+.tab-item{display:inline-block;text-align:center;padding:24rpx 22rpx;font-size:28rpx;color:#666;position:relative}
 .tab-item.active{color:#1976d2;font-weight:bold}
 .tab-item.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60rpx;height:4rpx;background:#1976d2;border-radius:2rpx}
 .order-list{padding:20rpx;height:calc(100vh - 200rpx)}

@@ -1,0 +1,48 @@
+<wxs module="wo">
+var statusText = function(s) {
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '待退款', '已取消'];
+  return map[s] || '未知';
+};
+module.exports = { statusText: statusText };
+</wxs>
+
+<view class="wod-page">
+  <block wx:if="{{order}}">
+    <view class="wod-status wod-status-{{order.status}}">{{wo.statusText(order.status)}}</view>
+
+    <view class="wod-card">
+      <view class="wod-row"><text class="wod-label">订单号</text><text class="wod-value">{{order.number}}</text></view>
+      <view class="wod-row"><text class="wod-label">预约时间</text><text class="wod-value">{{order.scheduleDate}} {{order.scheduleTime}}</text></view>
+      <view wx:if="{{order.serviceDuration}}" class="wod-row"><text class="wod-label">服务时长</text><text class="wod-value">{{order.serviceDuration}}</text></view>
+      <view wx:if="{{order.amount != null}}" class="wod-row"><text class="wod-label">订单金额</text><text class="wod-value">¥{{order.amount}}</text></view>
+      <view wx:if="{{order.estimatedServiceTime}}" class="wod-row"><text class="wod-label">预计到达</text><text class="wod-value">{{order.estimatedServiceTime}}</text></view>
+      <view wx:if="{{order.actualServiceTime}}" class="wod-row"><text class="wod-label">实际上门</text><text class="wod-value">{{order.actualServiceTime}}</text></view>
+    </view>
+
+    <view class="wod-card">
+      <view class="wod-card-title">服务内容</view>
+      <block wx:if="{{order.orderDetailList && order.orderDetailList.length > 0}}">
+        <view wx:for="{{order.orderDetailList}}" wx:key="id" class="wod-item">
+          <text class="wod-item-name">{{item.name}}</text>
+          <text wx:if="{{item.requirement}}" class="wod-item-req">服务要求：{{item.requirement}}</text>
+        </view>
+      </block>
+      <view wx:else class="wod-empty">--</view>
+    </view>
+
+    <view class="wod-card">
+      <view class="wod-card-title">客户信息</view>
+      <view class="wod-row"><text class="wod-label">联系人</text><text class="wod-value">{{order.contactName || '--'}}</text></view>
+      <view class="wod-row"><text class="wod-label">手机号</text><text class="wod-value">{{order.phone || '--'}}</text></view>
+      <view class="wod-row"><text class="wod-label">上门地址</text><text class="wod-value">{{order.address || '--'}}</text></view>
+      <view wx:if="{{order.remark}}" class="wod-row"><text class="wod-label">备注</text><text class="wod-value">{{order.remark}}</text></view>
+    </view>
+
+    <view wx:if="{{order.cancelReason}}" class="wod-card">
+      <view class="wod-row"><text class="wod-label">不接单原因</text><text class="wod-value wod-value-warn">{{order.cancelReason}}</text></view>
+    </view>
+  </block>
+
+  <view wx:if="{{loading}}" class="wod-loading">加载中...</view>
+  <view wx:if="{{!loading && !order}}" class="wod-empty-page">未找到订单</view>
+</view>

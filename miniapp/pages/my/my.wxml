@@ -1,6 +1,6 @@
 <wxs module="util">
 var getStatusText = function(status) {
-  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '退款中', '已取消'];
+  var map = ['', '待付款', '待接单', '已接单', '服务中', '已完成', '待退款', '已取消'];
   return map[status] || '未知';
 };
 var getStatusClass = function(status) {
@@ -26,7 +26,6 @@ module.exports = { getStatusText: getStatusText, getStatusClass: getStatusClass,
   <view class="my-header">
     <view class="user-avatar-wrap"><image class="user-avatar" src="{{userInfo.avatarUrl || '../../images/logo.png'}}" mode="aspectFill"></image></view>
     <text class="user-name">{{userInfo.nickName || '用户'}}</text>
-    <text class="user-phone">{{userInfo.phone || '138****0000'}}</text>
   </view>
 
   <!-- 家政员工作台入口 -->
@@ -45,6 +44,17 @@ module.exports = { getStatusText: getStatusText, getStatusClass: getStatusClass,
     </view>
     <view class="menu-item" bindtap="goHistoryOrder">
       <text class="menu-icon">📋</text><text class="menu-name">历史订单</text><text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goMyVoucher">
+      <text class="menu-icon">🎟️</text><text class="menu-name">我的优惠券</text><text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goMyNotify">
+      <text class="menu-icon">🔔</text><text class="menu-name">消息中心</text>
+      <text wx:if="{{unreadCount > 0}}" class="menu-badge">{{unreadCount > 99 ? '99+' : unreadCount}}</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goCustomerService">
+      <text class="menu-icon">💬</text><text class="menu-name">智能客服</text><text class="menu-arrow">></text>
     </view>
     <view class="menu-item" bindtap="logout">
       <text class="menu-icon">🚪</text><text class="menu-name" style="color:#e94e3c">退出登录</text><text class="menu-arrow">></text>

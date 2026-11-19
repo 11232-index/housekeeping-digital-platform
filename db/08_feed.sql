@@ -9,4 +9,4 @@ CREATE TABLE `feed` (
   KEY `idx_updates` (`updates_id`),
   KEY `idx_service_intro` (`service_intro_id`),
   KEY `idx_time` (`create_time` DESC)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='资讯动态统一表（联表）';
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs COMMENT='资讯动态统一表（联表）';

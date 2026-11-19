@@ -38,11 +38,7 @@ public class OrderUserController {
     public Result<OrderSubmitVO> submit(@RequestBody OrderSubmitDTO dto) {
         log.info("用户提交订单：{}", dto);
         OrderSubmitVO result = orderService.submitOrder(dto);
-        // 来单提醒：客户下单成功，落库 + 广播给在线 Web 员工端
-        orderNotifyService.push(
-                "newOrder", "来单提醒",
-                "您有新的订单，订单号 " + result.getOrderNumber(),
-                result.getOrderId(), result.getOrderNumber(), result.getAmount());
+        // 来单提醒由 MQ 消费者统一处理
         return Result.success(result);
     }
 
@@ -101,11 +97,7 @@ public class OrderUserController {
     public Result<OrderSubmitVO> submitItem(@RequestBody OrderSubmitDTO dto) {
         log.info("用户提交单条预约：{}", dto);
         OrderSubmitVO result = orderService.submitSingleOrder(dto, dto.getItem());
-        // 来单提醒：客户下单成功，落库 + 广播给在线 Web 员工端
-        orderNotifyService.push(
-                "newOrder", "来单提醒",
-                "您有新的预约订单，订单号 " + result.getOrderNumber(),
-                result.getOrderId(), result.getOrderNumber(), result.getAmount());
+        // 来单提醒由 MQ 消费者统一处理
         return Result.success(result);
     }
 

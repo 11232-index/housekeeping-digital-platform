@@ -11,7 +11,7 @@ function getServiceStatusText(status){
   return map[status]||'未知';
 }
 function getOrderStatusText(status){
-  var map={1:'待付款',2:'待接单',3:'已接单',4:'服务中',5:'已完成',6:'退款中',7:'已取消'};
+  var map={1:'待付款',2:'待接单',3:'已接单',4:'服务中',5:'已完成',6:'待退款',7:'已取消'};
   return map[status]||'未知';
 }
 function validatePhone(phone){ return /^1[3-9]\d{9}$/.test(phone); }

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.smart.mapper.StatisticsMapper">
+
+    <!--
+        统计口径（管理端工作台）：
+        - 营业额/有效订单：orders.status = 5（已完成）且 pay_status = 1（已支付），按 pay_time 归日
+        - 订单数：按 order_time 归日
+        - 订单/用户的时间字段都是 datetime，结束日期用 <= endTime 23:59:59 包住当天
+    -->
+
+    <!-- ==================== 营业额统计 ==================== -->
+
+    <select id="sumTurnoverByDay" resultType="com.smart.vo.DailyStatVO">
+        SELECT DATE_FORMAT(pay_time, '%Y-%m-%d') AS `date`,
+               COUNT(*) AS `count`,
+               SUM(amount) AS amount
+        FROM orders
+        WHERE status = 5
+          AND pay_status = 1
+          AND pay_time IS NOT NULL
+          AND pay_time &gt;= #{beginTime}
+          AND pay_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        GROUP BY DATE_FORMAT(pay_time, '%Y-%m-%d')
+        ORDER BY `date`
+    </select>
+
+    <select id="sumTurnover" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM orders
+        WHERE status = 5
+          AND pay_status = 1
+          AND pay_time IS NOT NULL
+          AND pay_time &gt;= #{beginTime}
+          AND pay_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+    </select>
+
+    <select id="countValidOrders" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE status = 5
+          AND pay_status = 1
+          AND pay_time IS NOT NULL
+          AND pay_time &gt;= #{beginTime}
+          AND pay_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+    </select>
+
+    <!-- ==================== 用户统计 ==================== -->
+
+    <select id="countTotalUsers" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM `user`
+    </select>
+
+    <select id="countNewUsersByDay" resultType="com.smart.vo.DailyStatVO">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS `date`,
+               COUNT(*) AS `count`
+        FROM `user`
+        WHERE create_time &gt;= #{beginTime}
+          AND create_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY `date`
+    </select>
+
+    <!-- ==================== 订单统计 ==================== -->
+
+    <select id="countOrders" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE order_time &gt;= #{beginTime}
+          AND order_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+    </select>
+
+    <select id="countOrdersByDay" resultType="com.smart.vo.DailyStatVO">
+        SELECT DATE_FORMAT(order_time, '%Y-%m-%d') AS `date`,
+               COUNT(*) AS `count`
+        FROM orders
+        WHERE order_time &gt;= #{beginTime}
+          AND order_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        GROUP BY DATE_FORMAT(order_time, '%Y-%m-%d')
+        ORDER BY `date`
+    </select>
+
+    <select id="countOrdersByStatus" resultType="com.smart.vo.StatusCountVO">
+        SELECT status,
+               COUNT(*) AS `count`
+        FROM orders
+        WHERE order_time &gt;= #{beginTime}
+          AND order_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        GROUP BY status
+        ORDER BY status
+    </select>
+
+    <!-- ==================== 销量排名统计 ==================== -->
+
+    <!--
+        只统计服务项目/服务套餐明细（排除家政员明细），
+        按「项目id」或「套餐id」分组（两者 id 可能重复，用前缀区分），名称取下单时的快照。
+    -->
+    <select id="listTopSales" resultType="com.smart.vo.SalesRankItemVO">
+        SELECT d.name AS name,
+               COUNT(*) AS `number`,
+               SUM(d.amount) AS amount
+        FROM order_detail d
+        INNER JOIN orders o ON o.id = d.order_id
+        WHERE o.status = 5
+          AND o.pay_status = 1
+          AND (d.service_item_id IS NOT NULL OR d.service_package_id IS NOT NULL)
+          AND o.order_time &gt;= #{beginTime}
+          AND o.order_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+        GROUP BY CASE
+                     WHEN d.service_item_id IS NOT NULL THEN CONCAT('item-', d.service_item_id)
+                     ELSE CONCAT('package-', d.service_package_id)
+                 END,
+                 d.name
+        ORDER BY `number` DESC, amount DESC
+        LIMIT 10
+    </select>
+
+</mapper>

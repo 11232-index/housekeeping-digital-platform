@@ -3,7 +3,7 @@ var request = require('../../utils/request.js');
 var util = require('../../utils/util.js');
 
 Page({
-  data: { userInfo: {}, recentOrders: [] },
+  data: { userInfo: {}, recentOrders: [], unreadCount: 0 },
 
   onLoad: function() {
     var userInfo = wx.getStorageSync('userInfo') || {};
@@ -16,6 +16,15 @@ Page({
     var userInfo = wx.getStorageSync('userInfo') || {};
     this.setData({ userInfo: userInfo });
     this.loadRecentOrders();
+    this.loadUnreadCount();
+  },
+
+  // 消息中心未读数角标：进页面时拉一次（看完消息返回时 onShow 会再拉）
+  loadUnreadCount: function() {
+    var that = this;
+    request.get('/user/notify/unread-count').then(function(res) {
+      that.setData({ unreadCount: Number(res.data) || 0 });
+    }).catch(function() { /* 角标拉取失败不影响页面 */ });
   },
 
   loadRecentOrders: function() {
@@ -30,6 +39,12 @@ Page({
 
   goAddress: function() { wx.navigateTo({ url: '/pages/address/address' }); },
   goHistoryOrder: function() { wx.navigateTo({ url: '/pages/historyOrder/historyOrder' }); },
+
+  goMyVoucher: function() { wx.navigateTo({ url: '/pages/myVoucher/myVoucher' }); },
+
+  goMyNotify: function() { wx.navigateTo({ url: '/pages/myNotify/myNotify' }); },
+
+  goCustomerService: function() { wx.navigateTo({ url: '/pages/customer-service/customer-service' }); },
 
   // 家政员工作台入口
   goWorkerLogin: function() {

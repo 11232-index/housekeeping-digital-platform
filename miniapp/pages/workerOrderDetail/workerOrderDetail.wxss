@@ -1,0 +1,23 @@
+.wod-page{min-height:100vh;background:#f5f5f5;padding:20rpx}
+.wod-status{margin-bottom:20rpx;padding:20rpx;border-radius:16rpx;text-align:center;font-size:30rpx;font-weight:bold;background:#e3f2fd;color:#1565c0}
+.wod-status-3{background:#e8f5e9;color:#2e7d32}
+.wod-status-4{background:#fff3e0;color:#e65100}
+.wod-status-5{background:#f3e5f5;color:#7b1fa2}
+.wod-status-6{background:#fff3e0;color:#e65100}
+.wod-status-7{background:#f5f5f5;color:#999}
+
+.wod-card{background:#fff;border-radius:16rpx;padding:24rpx;margin-bottom:20rpx}
+.wod-card-title{font-size:28rpx;font-weight:bold;color:#333;margin-bottom:16rpx}
+.wod-row{display:flex;align-items:flex-start;padding:12rpx 0;font-size:27rpx}
+.wod-label{width:150rpx;color:#999;flex-shrink:0}
+.wod-value{flex:1;color:#333;word-break:break-all}
+.wod-value-warn{color:#e65100}
+
+.wod-item{padding:12rpx 0;border-bottom:1rpx solid #f5f5f5}
+.wod-item:last-child{border-bottom:none}
+.wod-item-name{display:block;font-size:28rpx;color:#333}
+.wod-item-req{display:block;font-size:24rpx;color:#999;margin-top:6rpx}
+
+.wod-loading{text-align:center;color:#999;font-size:28rpx;padding:120rpx 0}
+.wod-empty{text-align:center;color:#bbb;font-size:26rpx;padding:20rpx 0}
+.wod-empty-page{text-align:center;color:#999;font-size:28rpx;padding:120rpx 0}

@@ -1,5 +1,6 @@
 var app = getApp();
 var request = require('../../utils/request.js');
+var util = require('../../utils/util.js');
 
 Page({
   data: {
@@ -103,10 +104,16 @@ wx.hideTabBar();
       content: '确定领取该优惠券吗？',
       success: function(res) {
         if (!res.confirm) return;
+        // 多人同时抢同一张券时，后端要串行扣同一行库存，请求可能需要排队等一会儿。
+        // 这里加 loading + mask 遮罩：一来让用户知道"正在处理"（否则界面完全没反应，
+        // 用户会以为没点上而反复点击），二来遮罩能挡住重复点击，从源头减少重复请求。
+        util.showLoading(isSeckill ? '抢券中...' : '领取中...');
         request.post('/user/voucher/seckill', { voucherId: voucherId }).then(function(data) {
+          util.hideLoading();
           wx.showToast({ title: '领取成功', icon: 'success' });
           that.loadCoupon();
         }).catch(function(err) {
+          util.hideLoading();
           wx.showToast({ title: err.message || '领取失败', icon: 'none' });
         });
       }
@@ -135,6 +142,8 @@ wx.hideTabBar();
     } else if (page === 'housekeeper') {
       app.globalData.bookingTab = 'housekeeper';
       wx.switchTab({ url: '/pages/booking/booking' });
+    } else if (page === 'customer-service') {
+      wx.navigateTo({ url: '/pages/customer-service/customer-service' });
     } else {
       wx.showToast({ title: '敬请期待', icon: 'none' });
     }

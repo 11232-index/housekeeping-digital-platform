@@ -1,0 +1,158 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">说说你的需求</text>
+    <text class="hero-sub">用一句话描述，帮你智能匹配合适的服务和家政员</text>
+  </view>
+
+  <view class="search-card">
+    <textarea
+      class="search-textarea"
+      value="{{query}}"
+      placeholder="例如：适合养宠物的保洁、会做饭的阿姨、家里有老人需要陪护"
+      placeholder-class="search-placeholder"
+      maxlength="200"
+      auto-height
+      bindinput="onInput"
+    ></textarea>
+    <view class="search-footer">
+      <text class="search-count">{{query.length}}/200</text>
+      <view class="search-btn {{query && !loading ? '' : 'disabled'}}" bindtap="onSearch">
+        {{loading ? '搜索中...' : '智能匹配'}}
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">试试这样搜</view>
+    <view class="example-list">
+      <view
+        wx:for="{{examples}}"
+        wx:key="*this"
+        class="example-item"
+        data-text="{{item}}"
+        bindtap="onExampleTap"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="result-card">
+    <view class="result-empty">
+      <text class="result-icon">✨</text>
+      <text class="result-title">正在智能匹配…</text>
+      <text class="result-desc">正在检索服务目录和家政员档案</text>
+    </view>
+  </view>
+
+  <view wx:elif="{{error}}" class="result-card">
+    <view class="result-empty">
+      <text class="result-icon">⚠️</text>
+      <text class="result-title">搜索失败</text>
+      <text class="result-desc">{{error}}</text>
+    </view>
+  </view>
+
+  <block wx:elif="{{searched}}">
+    <view wx:if="{{answer}}" class="answer-card">{{answer}}</view>
+
+    <view wx:if="{{results.length === 0}}" class="result-card">
+      <view class="result-empty">
+        <text class="result-icon">🔍</text>
+        <text class="result-title">没有找到匹配项</text>
+        <text class="result-desc">换个说法试试，或直接在家政预约页查看。</text>
+      </view>
+    </view>
+
+    <view
+      wx:for="{{results}}"
+      wx:key="key"
+      class="result-card result-item"
+      data-item="{{item}}"
+      bindtap="onResultTap"
+    >
+      <image
+        wx:if="{{item.image || item.picture}}"
+        class="result-img"
+        src="{{item.image || item.picture}}"
+        mode="aspectFill"
+      ></image>
+      <view wx:else class="result-img result-img-empty">{{item.type === 'housekeeper' ? '👤' : '🧹'}}</view>
+
+      <view class="result-body">
+        <view class="result-head">
+          <text class="result-name">{{item.name}}</text>
+          <text class="result-type">{{item.type === 'housekeeper' ? '家政员' : (item.type === 'package' ? '套餐' : '服务')}}</text>
+        </view>
+        <view class="result-meta">
+          <text wx:if="{{item.price > 0}}" class="result-price">¥{{item.price}}{{item.type === 'housekeeper' ? '/次' : ''}}</text>
+          <text wx:if="{{item.rank_text}}" class="result-position">{{item.rank_text}}</text>
+          <text wx:if="{{item.rating > 0}}" class="result-rating">{{item.rating}} 分</text>
+          <text wx:if="{{item.position}}" class="result-position">{{item.position}}</text>
+          <text wx:if="{{item.work_status}}" class="result-position">{{item.work_status}}</text>
+          <text wx:if="{{item.category}}" class="result-position">{{item.category}}</text>
+        </view>
+        <view wx:if="{{item.description}}" class="result-desc">{{item.description}}</view>
+        <view wx:if="{{item.past_experience}}" class="result-desc">经验：{{item.past_experience}}</view>
+        <view wx:if="{{item.review}}" class="result-desc">评价：{{item.review}}</view>
+        <view wx:if="{{item.available_slots.length > 0}}" class="result-slots">
+          <text class="slot-title">可约时段</text>
+          <text wx:for="{{item.available_slots}}" wx:for-item="slot" wx:key="*this" class="slot-item">{{slot}}</text>
+        </view>
+        <view wx:elif="{{item.type === 'housekeeper'}}" class="result-slots slot-empty">暂无可约时段</view>
+        <view class="result-reason">{{item.reason}}</view>
+        <view wx:if="{{item.type !== 'housekeeper'}}" class="result-action">
+          <view class="btn-add-cart" data-item="{{item}}" catchtap="addToCart">加入预约清单</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="result-card">
+    <view class="result-empty">
+      <text class="result-icon">✨</text>
+      <text class="result-title">描述需求，智能匹配</text>
+      <text class="result-desc">支持“适合养宠物的保洁”“会做饭的阿姨”这类自然描述。</text>
+    </view>
+  </view>
+
+  <!-- 服务/套餐详情弹窗（与服务预约页一致） -->
+  <view class="pop-mask" wx:if="{{showDetailPop}}" bindtap="closeDetail">
+    <view class="detail-pop" catchtap="stopPropagation">
+      <image wx:if="{{detailService.image}}" class="detail-image" src="{{detailService.image}}" mode="aspectFill"></image>
+      <view class="detail-title">{{detailService.name}}</view>
+      <view class="detail-desc">{{detailService.description || detailService.name}}</view>
+      <view class="detail-price"><text class="price-symbol">¥</text><text class="price-value">{{detailService.price}}</text></view>
+      <view class="detail-action">
+        <view class="btn-add-big" data-item="{{detailService}}" bindtap="addToCart">加入预约清单</view>
+      </view>
+      <text class="detail-close" bindtap="closeDetail">✕</text>
+    </view>
+  </view>
+
+  <!-- 选择服务需求弹窗（与服务预约页一致） -->
+  <view class="pop-mask" wx:if="{{showSpecPop}}" bindtap="closeSpecPop">
+    <view class="spec-pop" catchtap="stopPropagation">
+      <view class="spec-pop-title">{{currentService.name}}</view>
+      <scroll-view class="spec-pop-body" scroll-y="true">
+        <view wx:for="{{currentRequirements}}" wx:key="index" class="spec-group">
+          <view class="spec-group-title">{{item.name}}</view>
+          <view class="spec-options">
+            <view wx:for="{{item.options}}" wx:key="index" wx:for-item="opt" wx:for-index="optIdx"
+                  class="spec-option {{item.selected === opt ? 'active' : ''}}"
+                  data-req-index="{{index}}" data-option-index="{{optIdx}}"
+                  bindtap="onSelectRequirementOption">
+              {{opt}}
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="spec-pop-footer">
+        <view class="spec-confirm-btn" bindtap="onConfirmRequirement">加入预约清单</view>
+      </view>
+      <text class="spec-close" bindtap="closeSpecPop">✕</text>
+    </view>
+  </view>
+
+  <view class="pop-mask" wx:if="{{adding}}">
+    <view class="loading-wrap"><image class="loading-gif" src="../../images/loading.gif"></image></view>
+  </view>
+</view>

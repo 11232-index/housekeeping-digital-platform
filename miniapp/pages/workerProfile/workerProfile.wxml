@@ -1,5 +1,80 @@
-<view class="stub-page">
-  <text class="stub-icon">👤</text>
-  <text class="stub-title">个人中心</text>
-  <text class="stub-desc">功能开发中，敬请期待</text>
+<view class="wprof-page">
+  <view wx:if="{{loading}}" class="wprof-loading">加载中...</view>
+
+  <block wx:elif="{{profile}}">
+    <!-- 顶部：头像 + 姓名 + 岗位 -->
+    <view class="wprof-header">
+      <image wx:if="{{profile.picture}}" class="wprof-avatar" src="{{profile.picture}}" mode="aspectFill"></image>
+      <view wx:else class="wprof-avatar wprof-avatar-empty">👤</view>
+      <view class="wprof-head-info">
+        <text class="wprof-name">{{profile.name || '家政员'}}</text>
+        <text class="wprof-position">{{profile.position || '暂无岗位信息'}}</text>
+      </view>
+    </view>
+
+    <!-- 1. 员工基本信息 -->
+    <view class="wprof-card">
+      <view class="wprof-card-title">员工基本信息</view>
+      <view class="info-row"><text class="info-label">姓名</text><text>{{profile.name || '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">手机号</text><text>{{profile.phone || '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">性别</text><text>{{sexText}}</text></view>
+      <view class="info-row"><text class="info-label">年龄</text><text>{{profile.age || '暂无'}}</text></view>
+    </view>
+
+    <!-- 2. 详细信息 -->
+    <view class="wprof-card">
+      <view class="wprof-card-title">详细信息</view>
+      <view class="info-row"><text class="info-label">岗位</text><text>{{profile.position || '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">工资</text><text>{{profile.salary || '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">工作状态</text><text>{{profile.workStatus || '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">学历</text><text>{{educationText}}</text></view>
+      <view class="info-row"><text class="info-label">过去经历</text><text>{{experienceText}}</text></view>
+      <view class="info-row"><text class="info-label">合同</text><text>{{profile.contract ? '已上传' : '暂无'}}</text></view>
+      <view class="info-row"><text class="info-label">健康证</text><text>{{profile.healthCertificate ? '已上传' : '暂无'}}</text></view>
+    </view>
+
+    <!-- 3. 家政员信息 -->
+    <view class="wprof-card">
+      <view class="wprof-card-title">家政员信息</view>
+      <view class="info-row"><text class="info-label">单价</text><text>{{priceText}}</text></view>
+      <view class="info-row"><text class="info-label">评分</text><text>{{ratingText}}</text></view>
+      <view class="info-row"><text class="info-label">身价</text><text>{{rankText}}</text></view>
+      <view class="info-row"><text class="info-label">综合评价</text><text>{{profile.review || '暂无'}}</text></view>
+    </view>
+
+    <!-- 4. 排班信息（每个星期几一行，各显示自己的一条或多条时段） -->
+    <view class="wprof-card">
+      <view class="wprof-card-title">排班信息</view>
+      <block wx:if="{{scheduleRows.length > 0}}">
+        <view wx:for="{{scheduleRows}}" wx:key="day" class="wprof-sch-row">
+          <text class="wprof-sch-day">{{item.day}}</text>
+          <view class="wprof-sch-slots">
+            <view
+              wx:for="{{item.slots}}"
+              wx:for-item="slot"
+              wx:key="*this"
+              class="wprof-sch-slot"
+            >{{slot}}</view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="wprof-empty">暂无排班信息</view>
+    </view>
+
+    <!-- 5. 可预约时段 -->
+    <view class="wprof-card">
+      <view class="wprof-card-title">可预约时段</view>
+      <block wx:if="{{slotList.length > 0}}">
+        <view wx:for="{{slotList}}" wx:key="id" class="info-row">
+          <text class="info-label">{{item.scheduleDate}}</text>
+          <text>{{item.startTime}} ~ {{item.endTime}}</text>
+        </view>
+      </block>
+      <view wx:else class="wprof-empty">暂无可预约时段</view>
+    </view>
+
+    <view class="wprof-tip">以上信息由管理员维护，如有疑问请联系管理员</view>
+  </block>
+
+  <view wx:else class="wprof-loading">加载失败，请稍后重试</view>
 </view>
