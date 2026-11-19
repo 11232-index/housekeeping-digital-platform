@@ -67,17 +67,17 @@ logging:
 smart:
   jwt:
     # 设置jwt签名加密时使用的秘钥
-    admin-secret-key: change-me-secret
+    admin-secret-key: ${JWT_ADMIN_SECRET:change-me-admin-secret}
     # 设置jwt过期时间
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
     # 员工端jwt配置
-    employee-secret-key: change-me-secret
+    employee-secret-key: ${JWT_EMPLOYEE_SECRET:change-me-employee-secret}
     employee-ttl: 7200000
     employee-token-name: token
     # 用户端微信jwt配置
-    user-secret-key: change-me-secret
+    user-secret-key: ${JWT_USER_SECRET:change-me-user-secret}
     user-ttl: 7200000
     user-token-name: token
   alioss:

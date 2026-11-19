@@ -1,6 +1,7 @@
 package com.smart.service.impl;
 
 import com.github.pagehelper.PageHelper;
+import com.smart.constant.PasswordConstant;
 import com.smart.dto.EmployeeDTO;
 import com.smart.dto.EmployeePageQueryDTO;
 import com.smart.entity.Employee;
@@ -48,9 +49,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
 
         BeanUtils.copyProperties(employeeDTO, employee);
-        // 使用管理员设定的密码并BCrypt加密，未设定则默认change-me-password
+        // 使用管理员设定的密码并BCrypt加密，未设定则使用默认密码常量
         String rawPassword = (employeeDTO.getPassword() != null && !employeeDTO.getPassword().isEmpty())
-                ? employeeDTO.getPassword() : "change-me-password";
+                ? employeeDTO.getPassword() : PasswordConstant.DEFAULT_PASSWORD;
         employee.setPassword(passwordEncoder.encode(rawPassword));
         employee.setStatus(com.smart.constant.StatusConstant.ENABLE);
         employeeMapper.insert(employee);

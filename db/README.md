@@ -12,17 +12,17 @@
 
 ```bash
 cd db
-for f in [0-9][0-9]_*.sql; do echo ">> $f"; mysql -uroot -pchange-me-password --default-character-set=utf8mb4 < "$f" || break; done
+for f in [0-9][0-9]_*.sql; do echo ">> $f"; mysql -uroot -p --default-character-set=utf8mb4 < "$f" || break; done
 ```
 
 用 PowerShell：
 
 ```powershell
 cd db
-Get-ChildItem [0-9][0-9]_*.sql | Sort-Object Name | ForEach-Object { Write-Host ">> $_"; cmd /c "mysql -uroot -pchange-me-password --default-character-set=utf8mb4 < `"$($_.Name)`"" }
+Get-ChildItem [0-9][0-9]_*.sql | Sort-Object Name | ForEach-Object { Write-Host ">> $_"; cmd /c "mysql -uroot -p --default-character-set=utf8mb4 < `"$($_.Name)`"" }
 ```
 
-把 `-pchange-me-password` 换成你自己的 MySQL 密码。任何一步报错都会停下来并打印是哪个文件，照着改就行。
+回车后输入你自己的 MySQL 密码。任何一步报错都会停下来并打印是哪个文件，照着改就行。
 
 **方式二：用 Navicat / DataGrip 等工具**
 

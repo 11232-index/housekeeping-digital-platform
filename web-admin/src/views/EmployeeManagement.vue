@@ -110,7 +110,7 @@
           <el-input
             v-model="employeeForm.password"
             type="password"
-            placeholder="请输入密码，留空则默认change-me-password"
+            placeholder="请输入密码，留空则使用默认密码"
             show-password
           />
         </el-form-item>

@@ -5,6 +5,6 @@ package com.smart.constant;
  */
 public class PasswordConstant {
 
-    public static final String DEFAULT_PASSWORD = "change-me-password";
+    public static final String DEFAULT_PASSWORD = "ChangeMe123!";
 
 }

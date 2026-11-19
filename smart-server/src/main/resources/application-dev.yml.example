@@ -8,11 +8,15 @@ spring:
   rabbitmq:
     host: localhost          # RabbitMQ 地址（本机/虚拟机IP）
     port: 5672
-    username: guest
-    password: guest
+    username: your_rabbitmq_user
+    password: your_rabbitmq_password
     virtual-host: /
 
 smart:
+  jwt:
+    admin-secret-key: change-me-admin-secret
+    employee-secret-key: change-me-employee-secret
+    user-secret-key: change-me-user-secret
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
